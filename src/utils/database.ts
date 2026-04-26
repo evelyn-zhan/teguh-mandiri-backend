@@ -7,7 +7,7 @@ const connect = async() => {
         return "Connected to database."
     }
     catch (error) {
-        return error
+        throw error
     }
 }
 
