@@ -31,34 +31,3 @@ if (!process.env.VERCEL) {
         console.log(`http://localhost:${PORT}`)
     })
 }
-
-// async function init() {
-//     try {
-//         const dbConnection = await connectToDb()
-//         console.log(dbConnection)
-
-//         const app = express()
-//         const PORT = process.env.PORT || 3000
-
-//         app.use(cors())
-//         app.use(bodyParser.json())
-
-//         app.get("/", (req, res) => {
-//             res.status(200).json({
-//                 message: "Server is running.",
-//                 data: null
-//             })
-//         })
-
-//         app.use("/api", router)
-
-//         app.listen(PORT, () => {
-//             console.log(`Server is running on http://localhost:${PORT}`)
-//         })
-//     }
-//     catch (error) {
-//         console.log(error)
-//     }
-// }
-
-// init()
