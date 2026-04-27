@@ -1,8 +1,9 @@
 import express from "express"
 import bodyParser from "body-parser"
 import cors from "cors"
+import mongoose from "mongoose"
 
-import connectToDb from "./utils/database"
+import { DATABASE_URL } from "./utils/env"
 import router from "./routes/api"
 
 const app = express()
@@ -10,8 +11,9 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
-connectToDb()
-.then((message) => console.log(message))
+mongoose
+.connect(DATABASE_URL, { dbName: "teguh-mandiri" })
+.then(() => console.log("Connected to database."))
 .catch((error) => console.log(error))
 
 app.get("/", (req, res) => {
@@ -23,11 +25,5 @@ app.get("/", (req, res) => {
 
 app.use("/api", router)
 
-export default app
-
-if (!process.env.VERCEL) {
-    const PORT = 3000
-    app.listen(PORT, () => {
-        console.log(`http://localhost:${PORT}`)
-    })
-}
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => console.log(`Server is running on port http://localhost:${PORT}`))
