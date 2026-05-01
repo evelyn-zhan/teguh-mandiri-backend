@@ -10,8 +10,8 @@ type TItem = {
 }
 
 const itemDataValidation = Yup.object({
-    id: Yup.string().required(),
-    name: Yup.string().required(),
+    id: Yup.string().required("Item ID is required."),
+    name: Yup.string().required("Item name is required."),
     stock: Yup.number().default(0)
 })
 
@@ -58,7 +58,7 @@ export default {
             })
         }
     },
-    async addNewItem(req: Request, res: Response) {
+    async addItem(req: Request, res: Response) {
         const { id, name, stock } = req.body as unknown as TItem
         
         try {
@@ -77,7 +77,7 @@ export default {
             })
         }
     },
-    async updateItemData(req: Request<{ id: string }>, res: Response) {
+    async updateItem(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
         const { name, stock } = req.body as unknown as TItem
 
@@ -92,7 +92,7 @@ export default {
             }
 
             await itemDataValidation.validate({ id, name, stock })
-            const updatedItem = await ItemModel.findOneAndUpdate({ id }, { name, stock }, { new: true })
+            const updatedItem = await ItemModel.findOneAndUpdate({ id: id.toUpperCase() }, { name, stock }, { new: true })
 
             res.status(200).json({
                 message: "Item data updated successfully.",
@@ -120,7 +120,7 @@ export default {
                 })
             }
 
-            await ItemModel.findOneAndDelete({ id })
+            await ItemModel.findOneAndDelete({ id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Item deleted successfully.",
