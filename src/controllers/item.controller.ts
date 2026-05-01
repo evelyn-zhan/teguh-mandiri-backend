@@ -32,6 +32,32 @@ export default {
             })
         }
     },
+    async getItemById(req: Request<{ id: string }>, res: Response) {
+        const { id } = req.params
+
+        try {
+            const item = await ItemModel.findOne({ id: id.toUpperCase() })
+
+            if (!item) {
+                return res.status(404).json({
+                    message: "Item not found.",
+                    data: null
+                })
+            }
+
+            res.status(200).json({
+                message: "Item fetched successfully.",
+                data: item
+            })
+        }
+        catch (error) {
+            const err = error as unknown as Error
+            res.status(400).json({
+                message: err.message,
+                data: null
+            })
+        }
+    },
     async addNewItem(req: Request, res: Response) {
         const { id, name, stock } = req.body as unknown as TItem
         
@@ -51,12 +77,12 @@ export default {
             })
         }
     },
-    async updateItemData(req: Request, res: Response) {
+    async updateItemData(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
         const { name, stock } = req.body as unknown as TItem
 
         try {
-            const item = await ItemModel.findOne({ id })
+            const item = await ItemModel.findOne({ id: id.toUpperCase() })
 
             if (!item) {
                 return res.status(404).json({
@@ -81,11 +107,11 @@ export default {
             })
         }
     },
-    async deleteItem(req: Request, res: Response) {
+    async deleteItem(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
 
         try {
-            const item = await ItemModel.findOne({ id })
+            const item = await ItemModel.findOne({ id: id.toUpperCase() })
 
             if (!item) {
                 return res.status(404).json({
