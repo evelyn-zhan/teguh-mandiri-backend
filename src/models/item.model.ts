@@ -20,7 +20,6 @@ const ItemSchema = new Schema<IItem>(
         },
         stock: {
             type: Schema.Types.Number,
-            // required: true,
             default: 0
         }
     },
@@ -28,6 +27,10 @@ const ItemSchema = new Schema<IItem>(
         timestamps: false
     }
 )
+
+ItemSchema.pre("save", async function (this: IItem) {
+    this.id = this.id.toUpperCase()
+})
 
 const ItemModel = mongoose.model("item", ItemSchema)
 
