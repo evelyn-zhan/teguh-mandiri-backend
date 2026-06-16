@@ -25,9 +25,8 @@ export default {
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -51,9 +50,8 @@ export default {
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -63,7 +61,18 @@ export default {
         
         try {
             await itemDataValidation.validate({ id, name, stock })
+
+            const existingItem = await ItemModel.findOne({ id: id.toUpperCase() })
+
+            if (existingItem) {
+                return res.status(400).json({
+                    message: "Item already exists.",
+                    data: null
+                })
+            }
+
             const item = await ItemModel.create({ id, name, stock })
+
             res.status(201).json({
                 message: "Item added successfully.",
                 data: item
@@ -71,8 +80,16 @@ export default {
         }
         catch (error) {
             const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+
+            if (err.name == "Validation Error") {
+                return res.status(400).json({
+                    message: err.message,
+                    data: null
+                })
+            }
+            
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -101,8 +118,16 @@ export default {
         }
         catch (error) {
             const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+
+            if (err.name == "Validation Error") {
+                return res.status(400).json({
+                    message: err.message,
+                    data: null
+                })
+            }
+            
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -129,8 +154,16 @@ export default {
         }
         catch (error) {
             const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+
+            if (err.name == "Validation Error") {
+                return res.status(400).json({
+                    message: err.message,
+                    data: null
+                })
+            }
+            
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
