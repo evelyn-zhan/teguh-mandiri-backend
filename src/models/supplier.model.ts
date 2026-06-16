@@ -33,6 +33,7 @@ const SupplierSchema = new Schema<ISupplier>(
         }
     },
     {
+        _id: false,
         timestamps: false
     }
 )
