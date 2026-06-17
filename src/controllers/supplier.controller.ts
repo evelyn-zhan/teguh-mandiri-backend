@@ -12,10 +12,10 @@ type TSupplier = {
 }
 
 const supplierDataValidation = Yup.object({
-    id: Yup.string().required("Supplier ID is required."),
-    name: Yup.string().required("Supplier name is required."),
-    phone: Yup.string().required("Supplier phone is required."),
-    email: Yup.string().required("Supplier e-mail is required."),
+    id: Yup.string().required("ID Supplier diperlukan."),
+    name: Yup.string().required("Nama Supplier diperlukan."),
+    phone: Yup.string().required("Nomor HP Supplier diperlukan."),
+    email: Yup.string().required("E-mail Supplier diperlukan."),
     address: Yup.string()
 })
 
@@ -24,7 +24,7 @@ export default {
         try {
             const suppliers = await SupplierModel.find()
             res.status(200).json({
-                message: "Suppliers fetched successfully.",
+                message: "Berhasil mengambil data supplier.",
                 data: suppliers
             })
         }
@@ -43,18 +43,18 @@ export default {
 
             if (!supplier) {
                 return res.status(404).json({
-                    message: "Supplier not found.",
+                    message: "Supplier tidak ditemukan.",
                     data: null
                 })
             }
 
             res.status(200).json({
-                message: "Supplier fetched successfully.",
+                message: "Berhasil mengambil data supplier.",
                 data: supplier
             })
         }
         catch (error) {
-            res.status(400).json({
+            res.status(500).json({
                 message: "Internal Server Error",
                 data: null
             })
@@ -70,7 +70,7 @@ export default {
 
             if (existingSupplier) {
                 return res.status(400).json({
-                    message: "Supplier with this ID already exists.",
+                    message: "Sudah ada supplier dengan ID ini.",
                     data: null
                 })
             }
@@ -78,7 +78,7 @@ export default {
             const supplier = await SupplierModel.create({ _id: id, name, phone, email, address })
 
             res.status(201).json({
-                message: "Supplier added successfully.",
+                message: "Berhasil menambahkan supplier.",
                 data: supplier
             })
         }
@@ -107,7 +107,7 @@ export default {
 
             if (!supplier) {
                 return res.status(404).json({
-                    message: "Supplier not found.",
+                    message: "Supplier tidak ditemukan.",
                     data: null
                 })
             }
@@ -117,7 +117,7 @@ export default {
             const updatedSupplier = await SupplierModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, phone, email, address }, { new: true })
 
             res.status(200).json({
-                message: "Supplier data updated successfully.",
+                message: "Berhasil mengubah data supplier.",
                 data: updatedSupplier
             })
         }
@@ -145,7 +145,7 @@ export default {
 
             if (!supplier) {
                 return res.status(404).json({
-                    message: "Supplier not found.",
+                    message: "Supplier tidak ditemukan.",
                     data: null
                 })
             }
@@ -153,7 +153,7 @@ export default {
             await SupplierModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({
-                message: "Supplier deleted successfully.",
+                message: "Berhasil menghapus supplier.",
                 data: null
             })
         }

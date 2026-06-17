@@ -12,18 +12,18 @@ type TPurchaseOrder = {
 }
 
 const purchaseOrderValidation = Yup.object({
-    id: Yup.string().required("Purchase Order ID is required."),
-    supplier: Yup.string().required("Supplier name is required."),
+    id: Yup.string().required("ID Pemesanan diperlukan."),
+    supplier: Yup.string().required("Nama Supplier diperlukan."),
     items: Yup.array().of(
         Yup.object({
-            name: Yup.string().required("Item name is required."),
-            quantity: Yup.number().required("Item quantity is required."),
+            name: Yup.string().required("Nama Barang diperlukan."),
+            quantity: Yup.number().required("Jumlah Barang diperlukan."),
             received: Yup.number().default(0)
         })
     )
-    .min(1, "Items are required.")
-    .required("Items are required."),
-    expectedDeliveryDate: Yup.string().required("Expected delivery date is required.")
+    .min(1, "Daftar Barang diperlukan.")
+    .required("Daftar Barang diperlukan."),
+    expectedDeliveryDate: Yup.string().required("Perkiraan Tanggal Pengiriman diperlukan.")
 })
 
 export default {
@@ -31,7 +31,7 @@ export default {
         try {
             const purchaseOrders = await PurchaseOrderModel.find()
             res.status(200).json({
-                message: "Purchase orders fetched successfully.",
+                message: "Berhasil mengambil data pemesanan barang.",
                 data: purchaseOrders
             })
         }
@@ -50,13 +50,13 @@ export default {
 
             if (!purchaseOrder) {
                 return res.status(404).json({
-                    message: "Purchase order not found.",
+                    message: "Pemesanan tidak ditemukan.",
                     data: null
                 })
             }
 
             res.status(200).json({
-                message: "Purchase order fetched successfully.",
+                message: "Berhasil mengambil data pemesanan barang.",
                 data: purchaseOrder
             })
         }
@@ -79,7 +79,7 @@ export default {
 
             if (existingOrder) {
                 return res.status(400).json({
-                    message: "Purchase order with this ID already exists.",
+                    message: "Sudah ada pemesanan dengan ID ini.",
                     data: null
                 })
             }
@@ -87,7 +87,7 @@ export default {
             const purchaseOrder = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedDate })
 
             res.status(201).json({
-                message: "Purchase order added successfully.",
+                message: "Berhasil menambahkan pemesanan barang.",
                 data: {
                     ...purchaseOrder.toJSON(),
                     expectedDeliveryDate: purchaseOrder.expectedDeliveryDate.toISOString().split("T")[0]
@@ -119,7 +119,7 @@ export default {
 
             if (!order) {
                 return res.status(404).json({
-                    message: "Purchase order not found.",
+                    message: "Pemesanan tidak ditemukan.",
                     data: null
                 })
             }
@@ -131,7 +131,7 @@ export default {
             const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ _id: id.toUpperCase() }, { supplier, items, expectedDeliveryDate: parsedDate }, { new: true })
 
             res.status(200).json({
-                message: "Purchase order updated successfully.",
+                message: "Berhasil mengubah data pemesanan barang.",
                 data: {
                     ...updatedOrder!.toJSON(),
                     expectedDeliveryDate: updatedOrder!.expectedDeliveryDate.toISOString().split("T")[0]
@@ -162,7 +162,7 @@ export default {
 
             if (!order) {
                 return res.status(404).json({
-                    message: "Purchase order not found.",
+                    message: "Pemesanan tidak ditemukan.",
                     data: null
                 })
             }
@@ -170,7 +170,7 @@ export default {
             await PurchaseOrderModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({
-                message: "Purchase order deleted successfully.",
+                message: "Berhasil menghapus pemesanan barang.",
                 data: null
             })
         }

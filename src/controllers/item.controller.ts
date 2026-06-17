@@ -10,8 +10,8 @@ type TItem = {
 }
 
 const itemDataValidation = Yup.object({
-    id: Yup.string().required("Item ID is required."),
-    name: Yup.string().required("Item name is required."),
+    id: Yup.string().required("ID Barang diperlukan."),
+    name: Yup.string().required("Nama Barang diperlukan."),
     stock: Yup.number().default(0)
 })
 
@@ -20,7 +20,7 @@ export default {
         try {
             const items = await ItemModel.find()
             res.status(200).json({
-                message: "Items fetched successfully.",
+                message: "Berhasil mengambil data barang.",
                 data: items
             })
         }
@@ -39,13 +39,13 @@ export default {
 
             if (!item) {
                 return res.status(404).json({
-                    message: "Item not found.",
+                    message: "Barang tidak ditemukan.",
                     data: null
                 })
             }
 
             res.status(200).json({
-                message: "Item fetched successfully.",
+                message: "Berhasil mengambil data barang.",
                 data: item
             })
         }
@@ -66,7 +66,7 @@ export default {
 
             if (existingItem) {
                 return res.status(400).json({
-                    message: "Item with this ID already exists.",
+                    message: "Sudah ada barang dengan ID ini.",
                     data: null
                 })
             }
@@ -74,7 +74,7 @@ export default {
             const item = await ItemModel.create({ _id: id, name, stock })
 
             res.status(201).json({
-                message: "Item added successfully.",
+                message: "Berhasil menambahkan barang.",
                 data: item
             })
         }
@@ -103,7 +103,7 @@ export default {
 
             if (!item) {
                 return res.status(404).json({
-                    message: "Item not found.",
+                    message: "Barang tidak ditemukan.",
                     data: null
                 })
             }
@@ -113,7 +113,7 @@ export default {
             const updatedItem = await ItemModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, stock }, { new: true })
             
             res.status(200).json({
-                message: "Item data updated successfully.",
+                message: "Berhasil mengubah data barang.",
                 data: updatedItem
             })
         }
@@ -141,7 +141,7 @@ export default {
 
             if (!item) {
                 return res.status(404).json({
-                    message: "Item not found.",
+                    message: "Barang tidak ditemukan.",
                     data: null
                 })
             }
@@ -149,7 +149,7 @@ export default {
             await ItemModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({
-                message: "Item deleted successfully.",
+                message: "Berhasil menghapus barang.",
                 data: null
             })
         }
