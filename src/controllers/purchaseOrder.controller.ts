@@ -29,16 +29,16 @@ const purchaseOrderValidation = Yup.object({
 export default {
     async getAllOrders(req: Request, res: Response) {
         try {
-            const purchaseOrders = await PurchaseOrderModel.find()
+            const orders = await PurchaseOrderModel.find()
 
-            const formattedPurchaseOrders = purchaseOrders.map((order) => ({
-                ...order.toJSON(),
-                id: order._id
-            }))
+            const formattedOrders = orders.map((order) => {
+                const { _id, __v, ...data } = order.toJSON()
+                return { id: _id, ...data }
+            })
 
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
-                data: formattedPurchaseOrders
+                data: formattedOrders
             })
         }
         catch (error) {
@@ -52,21 +52,21 @@ export default {
         const { id } = req.params
 
         try {
-            const purchaseOrder = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
+            const order = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
 
-            if (!purchaseOrder) {
+            if (!order) {
                 return res.status(404).json({
                     message: "Pemesanan tidak ditemukan.",
                     data: null
                 })
             }
 
+            const { _id, __v, ...data } = order.toJSON()
+            const formattedOrder = { id: _id, ...data }
+
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
-                data: {
-                    ...purchaseOrder.toJSON(),
-                    id: purchaseOrder._id
-                }
+                data: formattedOrder
             })
         }
         catch (error) {
@@ -93,14 +93,16 @@ export default {
                 })
             }
 
-            const purchaseOrder = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedDate })
+            const order = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedDate })
+            
+            const { _id, __v, ...data } = order.toJSON()
+            const formattedOrder = { id: _id, ...data }
 
             res.status(201).json({
                 message: "Berhasil menambahkan pemesanan barang.",
                 data: {
-                    ...purchaseOrder.toJSON(),
-                    id: purchaseOrder._id,
-                    expectedDeliveryDate: purchaseOrder.expectedDeliveryDate.toISOString().split("T")[0]
+                    ...formattedOrder,
+                    expectedDeliveryDate: formattedOrder.expectedDeliveryDate.toISOString().split("T")[0]
                 }
             })
         }
@@ -140,12 +142,14 @@ export default {
 
             const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ _id: id.toUpperCase() }, { supplier, items, expectedDeliveryDate: parsedDate }, { new: true })
 
+            const { _id, __v, ...data } = updatedOrder!.toJSON()
+            const formattedOrder = { id: _id, ...data }
+
             res.status(200).json({
                 message: "Berhasil mengubah data pemesanan barang.",
                 data: {
-                    ...updatedOrder!.toJSON(),
-                    id: updatedOrder!._id,
-                    expectedDeliveryDate: updatedOrder!.expectedDeliveryDate.toISOString().split("T")[0]
+                    ...formattedOrder,
+                    expectedDeliveryDate: formattedOrder.expectedDeliveryDate.toISOString().split("T")[0]
                 }
             })
         }
