@@ -9,7 +9,7 @@ export interface IOrderItem {
 }
 
 export interface IPurchaseOrder {
-    id: string
+    _id: string
     supplier: string
     items: IOrderItem[]
     expectedDeliveryDate: Date
@@ -31,13 +31,14 @@ const OrderItemSchema = new Schema<IOrderItem> (
         }
     },
     {
+        _id: false,
         timestamps: false
     }
 )
 
 const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
     {
-        id: {
+        _id: {
             type: Schema.Types.String,
             required: true
         },
@@ -53,14 +54,11 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
             type: Schema.Types.Date,
             required: true
         }
-    },
-    {
-        _id: false
     }
 )
 
 PurchaseOrderSchema.pre("save", async function (this: IPurchaseOrder) {
-    this.id = this.id.toUpperCase()
+    this._id = this._id.toUpperCase()
 })
 
 const PurchaseOrderModel = mongoose.model("purchaseOrder", PurchaseOrderSchema)
