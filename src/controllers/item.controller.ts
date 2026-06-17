@@ -66,7 +66,7 @@ export default {
 
             if (existingItem) {
                 return res.status(400).json({
-                    message: "Item already exists.",
+                    message: "Item with this ID already exists.",
                     data: null
                 })
             }
@@ -109,8 +109,9 @@ export default {
             }
 
             await itemDataValidation.validate({ id, name, stock })
-            const updatedItem = await ItemModel.findOneAndUpdate({ id: id.toUpperCase() }, { name, stock }, { new: true })
 
+            const updatedItem = await ItemModel.findOneAndUpdate({ id: id.toUpperCase() }, { name, stock }, { new: true })
+            
             res.status(200).json({
                 message: "Item data updated successfully.",
                 data: updatedItem
