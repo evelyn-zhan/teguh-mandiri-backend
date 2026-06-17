@@ -24,10 +24,10 @@ export default {
         try {
             const suppliers = await SupplierModel.find()
 
-            const formattedSuppliers = suppliers.map((supplier) => ({
-                ...supplier.toJSON(),
-                id: supplier._id
-            }))
+            const formattedSuppliers = suppliers.map((supplier) => {
+                const { _id, __v, ...data } = supplier.toJSON()
+                return { id: _id, ...data }
+            })
 
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
@@ -54,12 +54,12 @@ export default {
                 })
             }
 
+            const { _id, __v, ...data } = supplier.toJSON()
+            const formattedSupplier = { id: _id, ...data }
+
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
-                data: {
-                    ...supplier.toJSON(),
-                    id: supplier._id
-                }
+                data: formattedSupplier
             })
         }
         catch (error) {
@@ -86,12 +86,12 @@ export default {
 
             const supplier = await SupplierModel.create({ _id: id, name, phone, email, address })
 
+            const { _id, __v, ...data } = supplier.toJSON()
+            const formattedSupplier = { id: _id, ...data }
+
             res.status(201).json({
                 message: "Berhasil menambahkan supplier.",
-                data: {
-                    ...supplier.toJSON(),
-                    id: supplier._id
-                }
+                data: formattedSupplier
             })
         }
         catch (error) {
@@ -128,12 +128,12 @@ export default {
 
             const updatedSupplier = await SupplierModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, phone, email, address }, { new: true })
 
+            const { _id, __v, ...data } = updatedSupplier!.toJSON()
+            const formattedSupplier = { id: _id, ...data }
+
             res.status(200).json({
                 message: "Berhasil mengubah data supplier.",
-                data: {
-                    ...updatedSupplier!.toJSON(),
-                    id: updatedSupplier!._id
-                }
+                data: formattedSupplier
             })
         }
         catch (error) {
