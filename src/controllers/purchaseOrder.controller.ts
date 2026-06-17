@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import * as Yup from "yup"
 
 import PurchaseOrderModel, { IOrderItem } from "../models/purchaseOrder.model"
+import { idText } from "typescript"
 
 type TPurchaseOrder = {
     id: string
@@ -19,8 +20,10 @@ const purchaseOrderValidation = Yup.object({
             quantity: Yup.number().required("Item quantity is required."),
             received: Yup.number().default(0)
         })
-    ),
-    expectedDeliveryDate: Yup.date().required("Expected delivery date is required.")
+    )
+    .min(1, "Items are required.")
+    .required("Items are required."),
+    expectedDeliveryDate: Yup.string().required("Expected delivery date is required.")
 })
 
 export default {
@@ -68,9 +71,11 @@ export default {
         const { id, supplier, items, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
 
         try {
-            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate })
+            const parsedDate = new Date(expectedDeliveryDate)
 
-            const existingOrder = await PurchaseOrderModel.findOne({ id: id.toUpperCase() })
+            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedDate })
+
+            const existingOrder = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
 
             if (existingOrder) {
                 return res.status(400).json({
@@ -79,11 +84,14 @@ export default {
                 })
             }
 
-            const purchaseOrder = await PurchaseOrderModel.create({ id, supplier, items, expectedDeliveryDate })
+            const purchaseOrder = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedDate })
 
             res.status(201).json({
                 message: "Purchase order added successfully.",
-                data: purchaseOrder
+                data: {
+                    ...purchaseOrder.toJSON(),
+                    expectedDeliveryDate: purchaseOrder.expectedDeliveryDate.toISOString().split("T")[0]
+                }
             })
         }
         catch (error) {
@@ -107,7 +115,7 @@ export default {
         const { supplier, items, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
 
         try {
-            const order = await PurchaseOrderModel.findOne({ id: id.toUpperCase() })
+            const order = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
 
             if (!order) {
                 return res.status(404).json({
@@ -116,13 +124,18 @@ export default {
                 })
             }
 
-            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate })
+            const parsedDate = new Date(expectedDeliveryDate)
 
-            const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ id: id.toUpperCase() }, { supplier, items, expectedDeliveryDate }, { new: true })
+            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedDate })
+
+            const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ _id: id.toUpperCase() }, { supplier, items, expectedDeliveryDate: parsedDate }, { new: true })
 
             res.status(200).json({
                 message: "Purchase order updated successfully.",
-                data: updatedOrder
+                data: {
+                    ...updatedOrder!.toJSON(),
+                    expectedDeliveryDate: updatedOrder!.expectedDeliveryDate.toISOString().split("T")[0]
+                }
             })
         }
         catch (error) {
@@ -145,7 +158,7 @@ export default {
         const { id } = req.params
         
         try {
-            const order = await PurchaseOrderModel.findOne({ id: id.toUpperCase() })
+            const order = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
 
             if (!order) {
                 return res.status(404).json({
@@ -154,7 +167,7 @@ export default {
                 })
             }
 
-            await PurchaseOrderModel.findOneAndDelete({ id: id.toUpperCase() })
+            await PurchaseOrderModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Purchase order deleted successfully.",
