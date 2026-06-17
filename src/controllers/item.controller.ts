@@ -62,7 +62,7 @@ export default {
         try {
             await itemDataValidation.validate({ id, name, stock })
 
-            const existingItem = await ItemModel.findOne({ id: id.toUpperCase() })
+            const existingItem = await ItemModel.findOne({ _id: id.toUpperCase() })
 
             if (existingItem) {
                 return res.status(400).json({
@@ -71,7 +71,7 @@ export default {
                 })
             }
 
-            const item = await ItemModel.create({ id, name, stock })
+            const item = await ItemModel.create({ _id: id, name, stock })
 
             res.status(201).json({
                 message: "Item added successfully.",
@@ -99,7 +99,7 @@ export default {
         const { name, stock } = req.body as unknown as TItem
 
         try {
-            const item = await ItemModel.findOne({ id: id.toUpperCase() })
+            const item = await ItemModel.findOne({ _id: id.toUpperCase() })
 
             if (!item) {
                 return res.status(404).json({
@@ -110,7 +110,7 @@ export default {
 
             await itemDataValidation.validate({ id, name, stock })
 
-            const updatedItem = await ItemModel.findOneAndUpdate({ id: id.toUpperCase() }, { name, stock }, { new: true })
+            const updatedItem = await ItemModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, stock }, { new: true })
             
             res.status(200).json({
                 message: "Item data updated successfully.",
@@ -137,7 +137,7 @@ export default {
         const { id } = req.params
 
         try {
-            const item = await ItemModel.findOne({ id: id.toUpperCase() })
+            const item = await ItemModel.findOne({ _id: id.toUpperCase() })
 
             if (!item) {
                 return res.status(404).json({
@@ -146,7 +146,7 @@ export default {
                 })
             }
 
-            await ItemModel.findOneAndDelete({ id: id.toUpperCase() })
+            await ItemModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Item deleted successfully.",
