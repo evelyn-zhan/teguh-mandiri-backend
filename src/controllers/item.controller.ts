@@ -89,7 +89,7 @@ export default {
             }
             
             res.status(500).json({
-                message: err.message,
+                message: err.name,
                 data: null
             })
         }
