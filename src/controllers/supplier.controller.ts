@@ -85,7 +85,7 @@ export default {
         catch (error) {
             const err = error as unknown as Error
 
-            if (err.name == "Validation Error") {
+            if (err.name == "ValidationError") {
                 return res.status(400).json({
                     message: err.message,
                     data: null
@@ -124,7 +124,7 @@ export default {
         catch (error) {
             const err = error as unknown as Error
 
-            if (err.name == "Validation Error") {
+            if (err.name == "ValidationError") {
                 return res.status(400).json({
                     message: err.message,
                     data: null
@@ -160,7 +160,7 @@ export default {
         catch (error) {
             const err = error as unknown as Error
 
-            if (err.name == "Validation Error") {
+            if (err.name == "ValidationError") {
                 return res.status(400).json({
                     message: err.message,
                     data: null
