@@ -29,9 +29,8 @@ export default {
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -55,9 +54,8 @@ export default {
             })
         }
         catch (error) {
-            const err = error as unknown as Error
             res.status(400).json({
-                message: err.message,
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -67,16 +65,35 @@ export default {
 
         try {
             await supplierDataValidation.validate({ id, name, phone, email, address })
-            await SupplierModel.create({ id, name, phone, email, address })
+
+            const existingSupplier = await SupplierModel.findOne({ id: id.toUpperCase() })
+
+            if (existingSupplier) {
+                return res.status(400).json({
+                    message: "Supplier with this ID already exists.",
+                    data: null
+                })
+            }
+
+            const supplier = await SupplierModel.create({ id, name, phone, email, address })
+
             res.status(201).json({
                 message: "Supplier added successfully.",
-                data: null
+                data: supplier
             })
         }
         catch (error) {
             const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+
+            if (err.name == "Validation Error") {
+                return res.status(400).json({
+                    message: err.message,
+                    data: null
+                })
+            }
+            
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -96,6 +113,7 @@ export default {
             }
 
             await supplierDataValidation.validate({ id, name, phone, email, address })
+
             const updatedSupplier = await SupplierModel.findOneAndUpdate({ id: id.toUpperCase() }, { name, phone, email, address }, { new: true })
 
             res.status(200).json({
@@ -105,8 +123,16 @@ export default {
         }
         catch (error) {
             const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+
+            if (err.name == "Validation Error") {
+                return res.status(400).json({
+                    message: err.message,
+                    data: null
+                })
+            }
+            
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
@@ -133,8 +159,16 @@ export default {
         }
         catch (error) {
             const err = error as unknown as Error
-            res.status(400).json({
-                message: err.message,
+
+            if (err.name == "Validation Error") {
+                return res.status(400).json({
+                    message: err.message,
+                    data: null
+                })
+            }
+            
+            res.status(500).json({
+                message: "Internal Server Error",
                 data: null
             })
         }
