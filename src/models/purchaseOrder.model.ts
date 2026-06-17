@@ -31,7 +31,6 @@ const OrderItemSchema = new Schema<IOrderItem> (
         }
     },
     {
-        _id: false,
         timestamps: false
     }
 )

@@ -24,7 +24,6 @@ const ItemSchema = new Schema<IItem>(
         }
     },
     {
-        _id: false,
         timestamps: false
     }
 )
