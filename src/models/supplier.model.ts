@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 export interface ISupplier {
-    id: string
+    _id: string
     name: string
     phone: string
     email: string
@@ -12,7 +12,7 @@ export interface ISupplier {
 
 const SupplierSchema = new Schema<ISupplier>(
     {
-        id: {
+        _id: {
             type: Schema.Types.String,
             required: true
         },
@@ -38,7 +38,7 @@ const SupplierSchema = new Schema<ISupplier>(
 )
 
 SupplierSchema.pre("save", async function (this: ISupplier) {
-    this.id = this.id.toUpperCase()
+    this._id = this._id.toUpperCase()
 })
 
 const SupplierModel = mongoose.model("supplier", SupplierSchema)
