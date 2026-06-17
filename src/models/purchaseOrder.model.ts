@@ -12,6 +12,7 @@ export interface IPurchaseOrder {
     _id: string
     supplier: string
     items: IOrderItem[]
+    createdAt: Date
     expectedDeliveryDate: Date
 }
 
@@ -54,6 +55,9 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
             type: Schema.Types.Date,
             required: true
         }
+    },
+    {
+        timestamps: true
     }
 )
 
