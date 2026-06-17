@@ -66,7 +66,7 @@ export default {
         try {
             await supplierDataValidation.validate({ id, name, phone, email, address })
 
-            const existingSupplier = await SupplierModel.findOne({ id: id.toUpperCase() })
+            const existingSupplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
 
             if (existingSupplier) {
                 return res.status(400).json({
@@ -75,7 +75,7 @@ export default {
                 })
             }
 
-            const supplier = await SupplierModel.create({ id, name, phone, email, address })
+            const supplier = await SupplierModel.create({ _id: id, name, phone, email, address })
 
             res.status(201).json({
                 message: "Supplier added successfully.",
@@ -103,7 +103,7 @@ export default {
         const { name, phone, email, address } = req.body as unknown as TSupplier
 
         try {
-            const supplier = await SupplierModel.findOne({ id: id.toUpperCase() })
+            const supplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
 
             if (!supplier) {
                 return res.status(404).json({
@@ -114,7 +114,7 @@ export default {
 
             await supplierDataValidation.validate({ id, name, phone, email, address })
 
-            const updatedSupplier = await SupplierModel.findOneAndUpdate({ id: id.toUpperCase() }, { name, phone, email, address }, { new: true })
+            const updatedSupplier = await SupplierModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, phone, email, address }, { new: true })
 
             res.status(200).json({
                 message: "Supplier data updated successfully.",
@@ -141,7 +141,7 @@ export default {
         const { id } = req.params
 
         try {
-            const supplier = await SupplierModel.findOne({ id: id.toUpperCase() })
+            const supplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
 
             if (!supplier) {
                 return res.status(404).json({
@@ -150,7 +150,7 @@ export default {
                 })
             }
 
-            await SupplierModel.findOneAndDelete({ id: id.toUpperCase() })
+            await SupplierModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Supplier deleted successfully.",
