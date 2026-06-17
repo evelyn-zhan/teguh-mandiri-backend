@@ -2,12 +2,12 @@ import { Request, Response } from "express"
 import * as Yup from "yup"
 
 import PurchaseOrderModel, { IOrderItem } from "../models/purchaseOrder.model"
-import { idText } from "typescript"
 
 type TPurchaseOrder = {
     id: string
     supplier: string
     items: IOrderItem[]
+    createdAt: Date
     expectedDeliveryDate: Date
 }
 
@@ -80,9 +80,9 @@ export default {
         const { id, supplier, items, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
 
         try {
-            const parsedDate = new Date(expectedDeliveryDate)
+            const parsedExpectedDeliveryDate = new Date(expectedDeliveryDate)
 
-            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedDate })
+            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
 
             const existingOrder = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
 
@@ -93,7 +93,7 @@ export default {
                 })
             }
 
-            const order = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedDate })
+            const order = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
             
             const { _id, __v, ...data } = order.toJSON()
             const formattedOrder = { id: _id, ...data }
@@ -124,7 +124,7 @@ export default {
     },
     async updateOrder(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
-        const { supplier, items, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
+        const { supplier, items, createdAt, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
 
         try {
             const order = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
@@ -136,11 +136,12 @@ export default {
                 })
             }
 
-            const parsedDate = new Date(expectedDeliveryDate)
+            const parsedExpectedDeliveryDate = new Date(expectedDeliveryDate)
+            const parsedCreatedAt = new Date(createdAt)
 
-            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedDate })
+            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
 
-            const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ _id: id.toUpperCase() }, { supplier, items, expectedDeliveryDate: parsedDate }, { new: true })
+            const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ _id: id.toUpperCase() }, { supplier, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate }, { new: true })
 
             const { _id, __v, ...data } = updatedOrder!.toJSON()
             const formattedOrder = { id: _id, ...data }
