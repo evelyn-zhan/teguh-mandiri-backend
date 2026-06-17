@@ -30,9 +30,15 @@ export default {
     async getAllOrders(req: Request, res: Response) {
         try {
             const purchaseOrders = await PurchaseOrderModel.find()
+
+            const formattedPurchaseOrders = purchaseOrders.map((order) => ({
+                ...order.toJSON(),
+                id: order._id
+            }))
+
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
-                data: purchaseOrders
+                data: formattedPurchaseOrders
             })
         }
         catch (error) {
@@ -46,7 +52,7 @@ export default {
         const { id } = req.params
 
         try {
-            const purchaseOrder = await PurchaseOrderModel.findOne({ id: id.toUpperCase() })
+            const purchaseOrder = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
 
             if (!purchaseOrder) {
                 return res.status(404).json({
@@ -57,7 +63,10 @@ export default {
 
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
-                data: purchaseOrder
+                data: {
+                    ...purchaseOrder.toJSON(),
+                    id: purchaseOrder._id
+                }
             })
         }
         catch (error) {
@@ -90,6 +99,7 @@ export default {
                 message: "Berhasil menambahkan pemesanan barang.",
                 data: {
                     ...purchaseOrder.toJSON(),
+                    id: purchaseOrder._id,
                     expectedDeliveryDate: purchaseOrder.expectedDeliveryDate.toISOString().split("T")[0]
                 }
             })
@@ -134,6 +144,7 @@ export default {
                 message: "Berhasil mengubah data pemesanan barang.",
                 data: {
                     ...updatedOrder!.toJSON(),
+                    id: updatedOrder!._id,
                     expectedDeliveryDate: updatedOrder!.expectedDeliveryDate.toISOString().split("T")[0]
                 }
             })

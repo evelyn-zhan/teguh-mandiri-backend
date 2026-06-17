@@ -19,9 +19,15 @@ export default {
     async getAllItems(req: Request, res: Response) {
         try {
             const items = await ItemModel.find()
+
+            const formattedItems = items.map((item) => ({
+                ...item.toJSON(),
+                id: item._id
+            }))
+
             res.status(200).json({
                 message: "Berhasil mengambil data barang.",
-                data: items
+                data: formattedItems
             })
         }
         catch (error) {
@@ -35,7 +41,7 @@ export default {
         const { id } = req.params
 
         try {
-            const item = await ItemModel.findOne({ id: id.toUpperCase() })
+            const item = await ItemModel.findOne({ _id: id.toUpperCase() })
 
             if (!item) {
                 return res.status(404).json({
@@ -46,7 +52,10 @@ export default {
 
             res.status(200).json({
                 message: "Berhasil mengambil data barang.",
-                data: item
+                data: {
+                    ...item.toJSON(),
+                    id: item._id
+                }
             })
         }
         catch (error) {
@@ -75,7 +84,10 @@ export default {
 
             res.status(201).json({
                 message: "Berhasil menambahkan barang.",
-                data: item
+                data: {
+                    ...item.toJSON(),
+                    id: item._id
+                }
             })
         }
         catch (error) {
@@ -114,7 +126,10 @@ export default {
             
             res.status(200).json({
                 message: "Berhasil mengubah data barang.",
-                data: updatedItem
+                data: {
+                    ...updatedItem!.toJSON(),
+                    id: updatedItem!._id
+                }
             })
         }
         catch (error) {

@@ -23,9 +23,15 @@ export default {
     async getAllSuppliers(req: Request, res: Response) {
         try {
             const suppliers = await SupplierModel.find()
+
+            const formattedSuppliers = suppliers.map((supplier) => ({
+                ...supplier.toJSON(),
+                id: supplier._id
+            }))
+
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
-                data: suppliers
+                data: formattedSuppliers
             })
         }
         catch (error) {
@@ -39,7 +45,7 @@ export default {
         const { id } = req.params
 
         try {
-            const supplier = await SupplierModel.findOne({ id: id.toUpperCase() })
+            const supplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
 
             if (!supplier) {
                 return res.status(404).json({
@@ -50,7 +56,10 @@ export default {
 
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
-                data: supplier
+                data: {
+                    ...supplier.toJSON(),
+                    id: supplier._id
+                }
             })
         }
         catch (error) {
@@ -79,7 +88,10 @@ export default {
 
             res.status(201).json({
                 message: "Berhasil menambahkan supplier.",
-                data: supplier
+                data: {
+                    ...supplier.toJSON(),
+                    id: supplier._id
+                }
             })
         }
         catch (error) {
@@ -118,7 +130,10 @@ export default {
 
             res.status(200).json({
                 message: "Berhasil mengubah data supplier.",
-                data: updatedSupplier
+                data: {
+                    ...updatedSupplier!.toJSON(),
+                    id: updatedSupplier!._id
+                }
             })
         }
         catch (error) {
