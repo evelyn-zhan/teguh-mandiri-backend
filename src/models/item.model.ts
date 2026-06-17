@@ -3,14 +3,14 @@ import mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 export interface IItem {
-    id: string
+    _id: string
     name: string
     stock: number
 }
 
 const ItemSchema = new Schema<IItem>(
     {
-        id: {
+        _id: {
             type: Schema.Types.String,
             required: true
         },
@@ -29,7 +29,7 @@ const ItemSchema = new Schema<IItem>(
 )
 
 ItemSchema.pre("save", async function (this: IItem) {
-    this.id = this.id.toUpperCase()
+    this._id = this._id.toUpperCase()
 })
 
 const ItemModel = mongoose.model("item", ItemSchema)
