@@ -20,14 +20,14 @@ export default {
         try {
             const items = await ItemModel.find()
 
-            const formattedItems = items.map((item) => {
-                const { _id, __v, ...data } = item.toJSON()
-                return { id: _id, ...data }
+            const data = items.map((item) => {
+                const { _id, __v, ...props } = item.toJSON()
+                return { id: _id, ...props }
             })
 
             res.status(200).json({
                 message: "Berhasil mengambil data barang.",
-                data: formattedItems
+                data
             })
         }
         catch (error) {
@@ -50,12 +50,12 @@ export default {
                 })
             }
 
-            const { _id, __v, ...data } = item.toJSON()
-            const formattedItem = { id: _id, ...data }
+            const { _id, __v, ...props } = item.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(200).json({
                 message: "Berhasil mengambil data barang.",
-                data: formattedItem
+                data
             })
         }
         catch (error) {
@@ -82,12 +82,12 @@ export default {
 
             const item = await ItemModel.create({ _id: id, name, stock })
             
-            const { _id, __v, ...data } = item.toJSON()
-            const formattedItem = { id: _id, ...data }
+            const { _id, __v, ...props } = item.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(201).json({
                 message: "Berhasil menambahkan barang.",
-                data: formattedItem
+                data
             })
         }
         catch (error) {
@@ -120,16 +120,18 @@ export default {
                 })
             }
 
-            await itemDataValidation.validate({ id, name, stock })
+            const updatedItem = await ItemModel.findOneAndUpdate(
+                { _id: id.toUpperCase() },
+                { name, stock },
+                { new: true }
+            )
 
-            const updatedItem = await ItemModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, stock }, { new: true })
-
-            const { _id, __v, ...data } = updatedItem!.toJSON()
-            const formattedItem = { id: _id, ...data }
+            const { _id, __v, ...props } = updatedItem!.toJSON()
+            const data = { id: _id, ...props }
             
             res.status(200).json({
                 message: "Berhasil mengubah data barang.",
-                data: formattedItem
+                data
             })
         }
         catch (error) {

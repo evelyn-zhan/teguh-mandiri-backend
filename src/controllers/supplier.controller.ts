@@ -24,14 +24,14 @@ export default {
         try {
             const suppliers = await SupplierModel.find()
 
-            const formattedSuppliers = suppliers.map((supplier) => {
-                const { _id, __v, ...data } = supplier.toJSON()
-                return { id: _id, ...data }
+            const data = suppliers.map((supplier) => {
+                const { _id, __v, ...props } = supplier.toJSON()
+                return { id: _id, ...props }
             })
 
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
-                data: formattedSuppliers
+                data
             })
         }
         catch (error) {
@@ -54,12 +54,12 @@ export default {
                 })
             }
 
-            const { _id, __v, ...data } = supplier.toJSON()
-            const formattedSupplier = { id: _id, ...data }
+            const { _id, __v, ...props } = supplier.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
-                data: formattedSupplier
+                data
             })
         }
         catch (error) {
@@ -86,12 +86,12 @@ export default {
 
             const supplier = await SupplierModel.create({ _id: id, name, phone, email, address })
 
-            const { _id, __v, ...data } = supplier.toJSON()
-            const formattedSupplier = { id: _id, ...data }
+            const { _id, __v, ...props } = supplier.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(201).json({
                 message: "Berhasil menambahkan supplier.",
-                data: formattedSupplier
+                data
             })
         }
         catch (error) {
@@ -124,16 +124,18 @@ export default {
                 })
             }
 
-            await supplierDataValidation.validate({ id, name, phone, email, address })
+            const updatedSupplier = await SupplierModel.findOneAndUpdate(
+                { _id: id.toUpperCase() },
+                { name, phone, email, address },
+                { new: true }
+            )
 
-            const updatedSupplier = await SupplierModel.findOneAndUpdate({ _id: id.toUpperCase() }, { name, phone, email, address }, { new: true })
-
-            const { _id, __v, ...data } = updatedSupplier!.toJSON()
-            const formattedSupplier = { id: _id, ...data }
+            const { _id, __v, ...props } = updatedSupplier!.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(200).json({
                 message: "Berhasil mengubah data supplier.",
-                data: formattedSupplier
+                data
             })
         }
         catch (error) {
