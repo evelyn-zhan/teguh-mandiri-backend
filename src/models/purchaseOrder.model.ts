@@ -3,14 +3,20 @@ import mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 export interface IOrderItem {
+    id: string
     name: string
     quantity: number
     received: number
 }
 
+export interface IOrderSupplier {
+    id: string
+    name: string
+}
+
 export interface IPurchaseOrder {
     _id: string
-    supplier: string
+    supplier: IOrderSupplier
     items: IOrderItem[]
     createdAt: Date
     expectedDeliveryDate: Date
@@ -18,6 +24,10 @@ export interface IPurchaseOrder {
 
 const OrderItemSchema = new Schema<IOrderItem> (
     {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
         name: {
             type: Schema.Types.String,
             required: true
@@ -37,6 +47,23 @@ const OrderItemSchema = new Schema<IOrderItem> (
     }
 )
 
+const OrderSupplierSchema = new Schema<IOrderSupplier> (
+    {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
+        name: {
+            type: Schema.Types.String,
+            required: true
+        }
+    },
+    {
+        _id: false,
+        timestamps: false
+    }
+)
+
 const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
     {
         _id: {
@@ -44,7 +71,7 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
             required: true
         },
         supplier: {
-            type: Schema.Types.String,
+            type: OrderSupplierSchema,
             required: true
         },
         items: {
