@@ -31,14 +31,14 @@ export default {
         try {
             const orders = await PurchaseOrderModel.find()
 
-            const formattedOrders = orders.map((order) => {
-                const { _id, __v, ...data } = order.toJSON()
-                return { id: _id, ...data }
+            const data = orders.map((order) => {
+                const { _id, __v, ...props } = order.toJSON()
+                return { id: _id, ...props }
             })
 
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
-                data: formattedOrders
+                data
             })
         }
         catch (error) {
@@ -61,12 +61,12 @@ export default {
                 })
             }
 
-            const { _id, __v, ...data } = order.toJSON()
-            const formattedOrder = { id: _id, ...data }
+            const { _id, __v, ...props } = order.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
-                data: formattedOrder
+                data
             })
         }
         catch (error) {
@@ -80,6 +80,7 @@ export default {
         const { id, supplier, items, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
 
         try {
+            const parsedCreatedAt = new Date(Date.now())
             const parsedExpectedDeliveryDate = new Date(expectedDeliveryDate)
 
             await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
@@ -93,16 +94,17 @@ export default {
                 })
             }
 
-            const order = await PurchaseOrderModel.create({ _id: id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
+            const order = await PurchaseOrderModel.create({ _id: id, supplier, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate })
             
-            const { _id, __v, ...data } = order.toJSON()
-            const formattedOrder = { id: _id, ...data }
+            const { _id, __v, ...props } = order.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(201).json({
                 message: "Berhasil menambahkan pemesanan barang.",
                 data: {
-                    ...formattedOrder,
-                    expectedDeliveryDate: formattedOrder.expectedDeliveryDate.toISOString().split("T")[0]
+                    ...data,
+                    createdAt: data.createdAt.toISOString().split("T")[0],
+                    expectedDeliveryDate: data.expectedDeliveryDate.toISOString().split("T")[0]
                 }
             })
         }
@@ -136,21 +138,24 @@ export default {
                 })
             }
 
-            const parsedExpectedDeliveryDate = new Date(expectedDeliveryDate)
-            const parsedCreatedAt = new Date(createdAt)
+            const parsedCreatedAt = createdAt ? new Date(createdAt) : order.createdAt
+            const parsedExpectedDeliveryDate = expectedDeliveryDate ? new Date(expectedDeliveryDate) : order.expectedDeliveryDate
 
-            await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
+            const updatedOrder = await PurchaseOrderModel.findOneAndUpdate(
+                { _id: id.toUpperCase() },
+                { supplier, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate },
+                { new: true }
+            )
 
-            const updatedOrder = await PurchaseOrderModel.findOneAndUpdate({ _id: id.toUpperCase() }, { supplier, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate }, { new: true })
-
-            const { _id, __v, ...data } = updatedOrder!.toJSON()
-            const formattedOrder = { id: _id, ...data }
+            const { _id, __v, ...props } = updatedOrder!.toJSON()
+            const data = { id: _id, ...props }
 
             res.status(200).json({
                 message: "Berhasil mengubah data pemesanan barang.",
                 data: {
-                    ...formattedOrder,
-                    expectedDeliveryDate: formattedOrder.expectedDeliveryDate.toISOString().split("T")[0]
+                    ...data,
+                    createdAt: data.createdAt.toISOString().split("T")[0],
+                    expectedDeliveryDate: data.expectedDeliveryDate.toISOString().split("T")[0]
                 }
             })
         }
