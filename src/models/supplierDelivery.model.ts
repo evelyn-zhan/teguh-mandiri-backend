@@ -7,9 +7,15 @@ export interface IDeliveredItem {
     quantity: number
 }
 
+export interface IOrderSupplier {
+    id: string
+    name: string
+}
+
 export interface ISupplierDelivery {
     _id: string
-    supplier: string
+    purchaseId: string
+    supplier: IOrderSupplier
     items: IDeliveredItem[]
     deliveryDate: Date
 }
@@ -31,14 +37,35 @@ const DeliveredItemSchema = new Schema<IDeliveredItem> (
     }
 )
 
+const OrderSupplierSchema = new Schema<IOrderSupplier> (
+    {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
+        name: {
+            type: Schema.Types.String,
+            required: true
+        }
+    },
+    {
+        _id: false,
+        timestamps: false
+    }
+)
+
 const SupplierDeliverySchema = new Schema<ISupplierDelivery> (
     {
         _id: {
             type: Schema.Types.String,
             required: true
         },
-        supplier: {
+        purchaseId: {
             type: Schema.Types.String,
+            required: true
+        },
+        supplier: {
+            type: OrderSupplierSchema,
             required: true
         },
         items: {
