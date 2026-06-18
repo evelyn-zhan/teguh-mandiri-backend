@@ -1,11 +1,13 @@
 import { Request, Response } from "express"
 import * as Yup from "yup"
 
-import PurchaseOrderModel, { IOrderItem } from "../models/purchaseOrder.model"
+import PurchaseOrderModel, { IOrderSupplier, IOrderItem } from "../models/purchaseOrder.model"
+import ItemModel from "../models/item.model"
+import SupplierModel from "../models/supplier.model"
 
 type TPurchaseOrder = {
     id: string
-    supplier: string
+    supplier: IOrderSupplier
     items: IOrderItem[]
     createdAt: Date
     expectedDeliveryDate: Date
@@ -13,9 +15,13 @@ type TPurchaseOrder = {
 
 const purchaseOrderValidation = Yup.object({
     id: Yup.string().required("ID Pemesanan diperlukan."),
-    supplier: Yup.string().required("Nama Supplier diperlukan."),
+    supplier: Yup.object({
+        id: Yup.string().required("ID Supplier diperlukan."),
+        name: Yup.string().required("Nama Supplier diperlukan.")
+    }),
     items: Yup.array().of(
         Yup.object({
+            id: Yup.string().required("ID Barang diperlukan."),
             name: Yup.string().required("Nama Barang diperlukan."),
             quantity: Yup.number().required("Jumlah Barang diperlukan."),
             received: Yup.number().default(0)
@@ -94,6 +100,26 @@ export default {
                 })
             }
 
+            const existingSupplier = await SupplierModel.findOne({ _id: supplier.id.toUpperCase() })
+
+            if (!existingSupplier) {
+                return res.status(404).json({
+                    message: `Supplier dengan ID ${supplier.id} tidak ditemukan.`,
+                    data: null
+                })
+            }
+
+            for (const item of items) {
+                const existingItem = await ItemModel.findOne({ _id: item.id.toUpperCase() })
+
+                if (!existingItem) {
+                    return res.status(404).json({
+                        message: `Barang dengan ID ${item.id} tidak ditemukan.`,
+                        data: null
+                    })
+                }
+            }
+
             const order = await PurchaseOrderModel.create({ _id: id, supplier, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate })
             
             const { _id, __v, ...props } = order.toJSON()
@@ -101,11 +127,7 @@ export default {
 
             res.status(201).json({
                 message: "Berhasil menambahkan pemesanan barang.",
-                data: {
-                    ...data,
-                    createdAt: data.createdAt.toISOString().split("T")[0],
-                    expectedDeliveryDate: data.expectedDeliveryDate.toISOString().split("T")[0]
-                }
+                data
             })
         }
         catch (error) {
@@ -138,6 +160,30 @@ export default {
                 })
             }
 
+            if (supplier) {
+                const existingSupplier = await SupplierModel.findOne({ _id: supplier.id.toUpperCase() })
+
+                if (!existingSupplier) {
+                    return res.status(404).json({
+                        message: `Supplier ${supplier.name} dengan ID ${supplier.id} tidak ditemukan pada daftar supplier.`,
+                        data: null
+                    })
+                }
+            }
+
+            if (items) {
+                for (const item of items) {
+                    const existingItem = await ItemModel.findOne({ _id: item.id.toUpperCase() })
+
+                    if (!existingItem) {
+                        return res.status(404).json({
+                            message: `${item.name} dengan ID ${item.id} tidak ditemukan pada daftar barang.`,
+                            data: null
+                        })
+                    }
+                }
+            }
+
             const parsedCreatedAt = createdAt ? new Date(createdAt) : order.createdAt
             const parsedExpectedDeliveryDate = expectedDeliveryDate ? new Date(expectedDeliveryDate) : order.expectedDeliveryDate
 
@@ -152,11 +198,7 @@ export default {
 
             res.status(200).json({
                 message: "Berhasil mengubah data pemesanan barang.",
-                data: {
-                    ...data,
-                    createdAt: data.createdAt.toISOString().split("T")[0],
-                    expectedDeliveryDate: data.expectedDeliveryDate.toISOString().split("T")[0]
-                }
+                data
             })
         }
         catch (error) {
