@@ -51,13 +51,17 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
             type: [OrderItemSchema],
             required: true
         },
+        createdAt: {
+            type: Schema.Types.Date,
+            default: Date.now
+        },
         expectedDeliveryDate: {
             type: Schema.Types.Date,
             required: true
         }
     },
     {
-        timestamps: true
+        timestamps: false
     }
 )
 
