@@ -59,7 +59,6 @@ export default {
 
         try {
             const order = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
-
             if (!order) {
                 return res.status(404).json({
                     message: "Pemesanan tidak ditemukan.",
@@ -92,7 +91,6 @@ export default {
             await purchaseOrderValidation.validate({ id, supplier, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
 
             const existingOrder = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
-
             if (existingOrder) {
                 return res.status(400).json({
                     message: "Sudah ada pemesanan dengan ID ini.",
@@ -101,7 +99,6 @@ export default {
             }
 
             const existingSupplier = await SupplierModel.findOne({ _id: supplier.id.toUpperCase() })
-
             if (!existingSupplier) {
                 return res.status(404).json({
                     message: `Supplier dengan ID ${supplier.id} tidak ditemukan.`,
@@ -111,7 +108,6 @@ export default {
 
             for (const item of items) {
                 const existingItem = await ItemModel.findOne({ _id: item.id.toUpperCase() })
-
                 if (!existingItem) {
                     return res.status(404).json({
                         message: `Barang dengan ID ${item.id} tidak ditemukan.`,
@@ -152,7 +148,6 @@ export default {
 
         try {
             const order = await PurchaseOrderModel.findOne({ _id: id.toUpperCase() })
-
             if (!order) {
                 return res.status(404).json({
                     message: "Pemesanan tidak ditemukan.",
@@ -162,7 +157,6 @@ export default {
 
             if (supplier) {
                 const existingSupplier = await SupplierModel.findOne({ _id: supplier.id.toUpperCase() })
-
                 if (!existingSupplier) {
                     return res.status(404).json({
                         message: `Supplier ${supplier.name} dengan ID ${supplier.id} tidak ditemukan pada daftar supplier.`,
@@ -174,7 +168,6 @@ export default {
             if (items) {
                 for (const item of items) {
                     const existingItem = await ItemModel.findOne({ _id: item.id.toUpperCase() })
-
                     if (!existingItem) {
                         return res.status(404).json({
                             message: `${item.name} dengan ID ${item.id} tidak ditemukan pada daftar barang.`,
