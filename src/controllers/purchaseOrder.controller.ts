@@ -98,7 +98,7 @@ export default {
                 })
             }
 
-            const existingSupplier = await SupplierModel.findOne({ _id: supplier.id.toUpperCase() })
+            const existingSupplier = await SupplierModel.findOne({ _id: supplier.id })
             if (!existingSupplier) {
                 return res.status(404).json({
                     message: `Supplier dengan ID ${supplier.id} tidak ditemukan.`,
@@ -107,7 +107,7 @@ export default {
             }
 
             for (const item of items) {
-                const existingItem = await ItemModel.findOne({ _id: item.id.toUpperCase() })
+                const existingItem = await ItemModel.findOne({ _id: item.id })
                 if (!existingItem) {
                     return res.status(404).json({
                         message: `Barang dengan ID ${item.id} tidak ditemukan.`,
@@ -156,10 +156,10 @@ export default {
             }
 
             if (supplier) {
-                const existingSupplier = await SupplierModel.findOne({ _id: supplier.id.toUpperCase() })
+                const existingSupplier = await SupplierModel.findOne({ _id: supplier.id })
                 if (!existingSupplier) {
                     return res.status(404).json({
-                        message: `Supplier ${supplier.name} dengan ID ${supplier.id} tidak ditemukan pada daftar supplier.`,
+                        message: `Supplier dengan ID ${supplier.id} tidak ditemukan.`,
                         data: null
                     })
                 }
@@ -167,10 +167,10 @@ export default {
 
             if (items) {
                 for (const item of items) {
-                    const existingItem = await ItemModel.findOne({ _id: item.id.toUpperCase() })
+                    const existingItem = await ItemModel.findOne({ _id: item.id })
                     if (!existingItem) {
                         return res.status(404).json({
-                            message: `${item.name} dengan ID ${item.id} tidak ditemukan pada daftar barang.`,
+                            message: `Barang dengan ID ${item.id} tidak ditemukan.`,
                             data: null
                         })
                     }
@@ -231,15 +231,6 @@ export default {
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-            
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
