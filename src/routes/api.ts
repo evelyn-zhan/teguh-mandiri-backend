@@ -27,5 +27,8 @@ router.delete("/procurement/purchase-orders/:id", purchaseOrderController.delete
 
 router.get("/procurement/deliveries", supplierDeliveryController.getAllDeliveries)
 router.get("/procurement/deliveries/:id", supplierDeliveryController.getDeliveryById)
+router.post("/procurement/deliveries", supplierDeliveryController.addDelivery)
+router.put("/procurement/deliveries/:id", supplierDeliveryController.updateDelivery)
+router.delete("/procurement/deliveries/:id", supplierDeliveryController.deleteDelivery)
 
 export default router
