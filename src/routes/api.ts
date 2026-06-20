@@ -5,6 +5,7 @@ import supplierController from "../controllers/supplier.controller"
 import purchaseOrderController from "../controllers/purchaseOrder.controller"
 import supplierDeliveryController from "../controllers/supplierDelivery.controller"
 import customerOrderController from "../controllers/customerOrder.controller"
+import salesDeliveryController from "../controllers/salesDelivery.controller"
 
 const router = express.Router();
 
@@ -37,5 +38,11 @@ router.get("/sales/orders/:id", customerOrderController.getOrderById)
 router.post("/sales/orders", customerOrderController.addOrder)
 router.put("/sales/orders/:id", customerOrderController.updateOrder)
 router.delete("/sales/orders/:id", customerOrderController.deleteOrder)
+
+router.get("/sales/deliveries", salesDeliveryController.getAllDeliveries)
+router.get("/sales/deliveries/:id", salesDeliveryController.getDeliveryById)
+router.post("/sales/deliveries", salesDeliveryController.addDelivery)
+router.put("/sales/deliveries/:id", salesDeliveryController.updateDelivery)
+router.delete("/sales/deliveries/:id", salesDeliveryController.deleteDelivery)
 
 export default router
