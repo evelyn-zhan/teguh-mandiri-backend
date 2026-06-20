@@ -40,7 +40,7 @@ export default {
 
         try {
             let filter = {}
-            if (isCompleted != undefined) {
+            if (isCompleted != undefined && isCompleted) {
                 filter = (isCompleted == "true" ? { isCompleted: true } : { isCompleted: false })
             }
 
