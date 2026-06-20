@@ -20,6 +20,7 @@ export interface IPurchaseOrder {
     items: IOrderItem[]
     createdAt: Date
     expectedDeliveryDate: Date
+    isCompleted: boolean
 }
 
 const OrderItemSchema = new Schema<IOrderItem> (
@@ -85,6 +86,10 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder> (
         expectedDeliveryDate: {
             type: Schema.Types.Date,
             required: true
+        },
+        isCompleted: {
+            type: Schema.Types.Boolean,
+            default: false
         }
     },
     {

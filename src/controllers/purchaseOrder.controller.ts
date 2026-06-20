@@ -11,6 +11,7 @@ type TPurchaseOrder = {
     items: IOrderItem[]
     createdAt: Date
     expectedDeliveryDate: Date
+    isCompleted: Boolean
 }
 
 const purchaseOrderValidation = Yup.object({
@@ -29,13 +30,21 @@ const purchaseOrderValidation = Yup.object({
     )
     .min(1, "Daftar Barang diperlukan.")
     .required("Daftar Barang diperlukan."),
-    expectedDeliveryDate: Yup.string().required("Perkiraan Tanggal Pengiriman diperlukan.")
+    expectedDeliveryDate: Yup.string().required("Perkiraan Tanggal Pengiriman diperlukan."),
+    isCompleted: Yup.boolean().default(false)
 })
 
 export default {
     async getAllOrders(req: Request, res: Response) {
+        const { isCompleted } = req.query
+
         try {
-            const orders = await PurchaseOrderModel.find()
+            let filter = {}
+            if (isCompleted != undefined) {
+                filter = (isCompleted == "true" ? { isCompleted: true } : { isCompleted: false })
+            }
+
+            const orders = await PurchaseOrderModel.find(filter)
 
             const data = orders.map((order) => {
                 const { _id, __v, ...props } = order.toJSON()
