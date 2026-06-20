@@ -24,7 +24,7 @@ const purchaseOrderValidation = Yup.object({
         Yup.object({
             id: Yup.string().required("ID Barang diperlukan."),
             name: Yup.string().required("Nama Barang diperlukan."),
-            quantity: Yup.number().required("Jumlah Barang diperlukan."),
+            quantity: Yup.number().required("Jumlah Barang diperlukan.").min(1, "Jumlah Barang minimal 1."),
             received: Yup.number().default(0)
         })
     )
