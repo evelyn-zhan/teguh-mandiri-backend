@@ -151,6 +151,26 @@ export default {
                 )
             }
 
+            const purchase = await PurchaseOrderModel.findOne({ _id: purchaseId })
+            let completedDelivery = true
+
+            for (const item of purchase!.items) {
+                if (item.received != item.quantity) {
+                    completedDelivery = false
+                }
+            }
+
+            console.log(completedDelivery)
+
+            if (completedDelivery) {
+                await PurchaseOrderModel.updateOne(
+                    { _id: purchaseId },
+                    {
+                        $set: { isCompleted: true }
+                    }
+                )
+            }
+
             const delivery = await SupplierDeliveryModel.create({ _id: id, purchaseId, supplier, items, deliveryDate: parsedDeliveryDate })
 
             const { _id, __v, ...props } = delivery.toJSON()
