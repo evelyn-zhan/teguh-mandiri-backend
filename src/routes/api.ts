@@ -4,12 +4,14 @@ import itemMiddleware from "../middlewares/item.middleware"
 import supplierMiddleware from "../middlewares/supplier.middleware"
 import purchaseOrderMiddleware from "../middlewares/purchaseOrder.middleware"
 import supplierDeliveryMiddleware from "../middlewares/supplierDelivery.middleware"
+import customerMiddleware from "../middlewares/customer.middleware"
 import customerOrderMiddleware from "../middlewares/customerOrder.middleware"
 
 import itemController from "../controllers/item.controller"
 import supplierController from "../controllers/supplier.controller"
 import purchaseOrderController from "../controllers/purchaseOrder.controller"
 import supplierDeliveryController from "../controllers/supplierDelivery.controller"
+import customerController from "../controllers/customer.controller"
 import customerOrderController from "../controllers/customerOrder.controller"
 import salesDeliveryController from "../controllers/salesDelivery.controller"
 
@@ -68,6 +70,12 @@ router.delete(
     supplierDeliveryMiddleware.validateSupplierDeliveryId,
     supplierDeliveryController.deleteDelivery
 )
+
+router.get("/customers", customerController.getAllCustomers)
+router.get("/customers/:id", customerController.getCustomerById)
+router.post("/customers", customerMiddleware.validateCustomerData, customerMiddleware.validateCustomerExistance, customerController.addCustomer)
+router.put("/customers/:id", customerMiddleware.validateCustomerId, customerController.updateCustomer)
+router.delete("/customers/:id", customerMiddleware.validateCustomerId, customerController.deleteCustomer)
 
 router.get("/sales/orders", customerOrderController.getAllOrders)
 router.get("/sales/orders/:id", customerOrderController.getOrderById)
