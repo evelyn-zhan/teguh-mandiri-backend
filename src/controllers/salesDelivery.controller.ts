@@ -1,31 +1,21 @@
 import { Request, Response } from "express"
-import * as Yup from "yup"
 
-import SalesDeliveryModel, { IDeliveredItem } from "../models/salesDelivery.model"
+import SalesDeliveryModel from "../models/salesDelivery.model"
 import CustomerOrderModel from "../models/purchaseOrder.model"
 import ItemModel from "../models/item.model"
 
-type TSalesDelivery = {
+export type TDeliveredItem = {
     id: string
-    purchaseId: string
-    items: IDeliveredItem[]
-    deliveryDate: Date
+    name: string
+    quantity: number
 }
 
-const SalesDeliveryValidation = Yup.object({
-    id: Yup.string().required("ID Pengiriman diperlukan."),
-    purchaseId: Yup.string().required("ID Pemesanan diperlukan."),
-    items: Yup.array().of(
-        Yup.object({
-            id: Yup.string().required("ID Barang diperlukan."),
-            name: Yup.string().required("Nama Barang diperlukan."),
-            quantity: Yup.number().required("Jumlah Barang diperlukan.")
-        })
-    )
-    .min(1, "Daftar Barang diperlukan.")
-    .required("Daftar Barang diperlukan."),
-    deliveryDate: Yup.date().required("Tanggal Pengiriman diperlukan.")
-})
+export type TSalesDelivery = {
+    id: string
+    purchaseId: string
+    items: TDeliveredItem[]
+    deliveryDate: Date
+}
 
 export default {
     async getAllDeliveries(req: Request, res: Response) {
@@ -33,8 +23,7 @@ export default {
             const deliveries = await SalesDeliveryModel.find()
 
             const data = deliveries.map((delivery) => {
-                const { _id, __v, ...props } = delivery.toJSON()
-                return { id: _id, ...props }
+                return { id: delivery._id, purchaseId: delivery.purchaseId, items: delivery.items, deliveryDate: delivery.deliveryDate }
             })
 
             res.status(200).json({
@@ -62,8 +51,7 @@ export default {
                 })
             }
 
-            const { _id, __v, ...props } = delivery.toJSON()
-            const data = { id: _id, ...props }
+            const data = { id: delivery._id, purchaseId: delivery.purchaseId, items: delivery.items, deliveryDate: delivery.deliveryDate }
 
             res.status(200).json({
                 message: "Berhasil mengambil data pengiriman barang.",
@@ -81,94 +69,45 @@ export default {
         const { id, purchaseId, items, deliveryDate } = req.body as unknown as TSalesDelivery
 
         try {
-            const parsedDeliveryDate = new Date(deliveryDate)
-
-            await SalesDeliveryValidation.validate({ id, purchaseId, items, deliveryDate: parsedDeliveryDate })
-
-            const existingDelivery = await SalesDeliveryModel.findOne({ _id: id.toUpperCase() })
-            if (existingDelivery) {
-                return res.status(400).json({
-                    message: "Sudah ada pengiriman dengan ID ini.",
-                    data: null
-                })
-            }
-
-            const existingPurchase = await CustomerOrderModel.findOne({ _id: purchaseId })
-            if (!existingPurchase) {
-                return res.status(404).json({
-                    message: `Pemesanan dengan ID ${purchaseId} tidak ditemukan.`,
-                    data: null
-                })
-            }
-
             for (const item of items) {
-                const matchingItem = existingPurchase.items.find((purchasedItem) => purchasedItem.id == item.id)
-
-                if (!matchingItem) {
-                    return res.status(400).json({
-                        message: `Barang dengan ID ${item.id} tidak ada pada pemesanan.`,
-                        data: null
-                    })
-                }
-
                 await CustomerOrderModel.updateOne(
-                    {
-                        _id: purchaseId,
-                        "items.id": item.id
-                    },
-                    {
-                        $inc: { "items.$.received": item.quantity }
-                    }
+                    { _id: purchaseId.toUpperCase(), "items.id": item.id },
+                    { $inc: { "items.$.received": item.quantity } }
                 )
 
                 await ItemModel.updateOne(
                     { _id: item.id },
-                    {
-                        $inc: { stock: item.quantity }
-                    }
+                    { $inc: { stock: item.quantity } }
                 )
             }
 
-            const purchase = await CustomerOrderModel.findOne({ _id: purchaseId })
-            let completedDelivery = true
+            const order = await CustomerOrderModel.findOne({ _id: purchaseId.toUpperCase() })
+            
+            let isCompleted = true
 
-            for (const item of purchase!.items) {
+            for (const item of order!.items) {
                 if (item.received != item.quantity) {
-                    completedDelivery = false
+                    isCompleted = false
                 }
             }
 
-            console.log(completedDelivery)
-
-            if (completedDelivery) {
+            if (isCompleted) {
                 await CustomerOrderModel.updateOne(
-                    { _id: purchaseId },
-                    {
-                        $set: { isCompleted: true }
-                    }
+                    { _id: purchaseId.toUpperCase() },
+                    { $set: { isCompleted: true } }
                 )
             }
 
-            const delivery = await SalesDeliveryModel.create({ _id: id, purchaseId, items, deliveryDate: parsedDeliveryDate })
+            const parsedDeliveryDate = new Date(deliveryDate)
 
-            const { _id, __v, ...props } = delivery.toJSON()
-            const data = { id: _id, ...props }
+            await SalesDeliveryModel.create({ _id: id, purchaseId, items, deliveryDate: parsedDeliveryDate })
 
             res.status(201).json({
                 message: "Berhasil menambahkan pengiriman barang.",
-                data
+                data: null
             })
         }
-        catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-            
+        catch (error) { 
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
@@ -180,82 +119,42 @@ export default {
         const { purchaseId, items, deliveryDate } = req.body as unknown as TSalesDelivery
 
         try {
-            const delivery = await SalesDeliveryModel.findOne({ _id: id.toUpperCase() })
-            if (!delivery) {
-                return res.status(404).json({
-                    message: "Pengiriman tidak ditemukan.",
-                    data: null
-                })
-            }
-
-            if (purchaseId) {
-                const existingPurchase = await CustomerOrderModel.findOne({ _id: purchaseId })
-                if (!existingPurchase) {
-                    return res.status(404).json({
-                        message: `Pemesanan dengan ID ${purchaseId} tidak ditemukan.`,
-                        data: null
-                    })
-                }
-            }
-
             if (items) {
-                const purchase = await CustomerOrderModel.findOne({ _id: purchaseId || delivery!.purchaseId })
+                const delivery = await SalesDeliveryModel.findOne({ _id: id.toUpperCase() })
 
                 for (const item of items) {
-                    const matchingItem = purchase!.items.find((purchasedItem) => purchasedItem.id == item.id)
-
-                    if (!matchingItem) {
-                        return res.status(400).json({
-                            message: `Barang dengan ID ${item.id} tidak ada pada pemesanan.`,
-                            data: null
-                        })
-                    }
-
-                    const currentDeliveredQuantity = delivery!.items.find((deliveredItem) => deliveredItem.id == item.id)!.quantity
+                    const quantity = delivery!.items.find((deliveredItem) => deliveredItem.id == item.id.toUpperCase())!.quantity
 
                     await CustomerOrderModel.updateOne(
-                        {
-                            _id: purchaseId || delivery!.purchaseId,
-                            "items.id": item.id
-                        },
-                        {
-                            $inc: { "items.$.received": item.quantity - currentDeliveredQuantity }
-                        }
+                        { _id: purchaseId.toUpperCase() || delivery!.purchaseId, "items.id": item.id },
+                        { $inc: { "items.$.received": item.quantity - quantity } }
                     )
 
                     await ItemModel.updateOne(
                         { _id: item.id },
-                        {
-                            $inc: { stock: item.quantity - currentDeliveredQuantity }
-                        }
+                        { $inc: { stock: item.quantity - quantity } }
                     )
                 }
             }
 
-            const updatedDelivery = await SalesDeliveryModel.findOneAndUpdate(
-                { _id: id.toUpperCase() },
-                { purchaseId, items, deliveryDate },
-                { new: true }
-            )
+            const newData: Record<string, any> = {}
 
-            const { _id, __v, ...props } = updatedDelivery!.toJSON()
-            const data = { id: _id, ...props }
+            if (purchaseId) newData.purchaseId = purchaseId.toUpperCase()
+            if (items) {
+                newData.items = items.map((item) => {
+                    return { id: item.id.toUpperCase(), name: item.name, quantity: item.quantity }
+                })
+            }
+            if (deliveryDate) newData.deliveryDate = new Date(deliveryDate)
+
+            await SalesDeliveryModel.updateOne({ _id: id.toUpperCase() }, newData)
 
             res.status(200).json({
                 message: "Berhasil memperbarui pengiriman barang.",
-                data
+                data: null
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
@@ -266,15 +165,6 @@ export default {
         const { id } = req.params
 
         try {
-            const delivery = await SalesDeliveryModel.findOne({ _id: id.toUpperCase() })
-
-            if (!delivery) {
-                return res.status(404).json({
-                    message: "Pengiriman tidak ditemukan.",
-                    data: null
-                })
-            }
-
             await SalesDeliveryModel.findOneAndDelete({ _id: id.toUpperCase() })
 
             res.status(200).json({

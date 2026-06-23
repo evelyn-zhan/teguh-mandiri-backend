@@ -3,7 +3,7 @@ import * as Yup from "yup"
 
 import SupplierModel from "../models/supplier.model"
 
-type TSupplier = {
+export type TSupplier = {
     id: string
     name: string
     phone: string
@@ -11,22 +11,13 @@ type TSupplier = {
     address: string
 }
 
-const supplierDataValidation = Yup.object({
-    id: Yup.string().required("ID Supplier diperlukan."),
-    name: Yup.string().required("Nama Supplier diperlukan."),
-    phone: Yup.string().required("Nomor HP Supplier diperlukan."),
-    email: Yup.string().required("E-mail Supplier diperlukan."),
-    address: Yup.string()
-})
-
 export default {
     async getAllSuppliers(req: Request, res: Response) {
         try {
             const suppliers = await SupplierModel.find()
 
             const data = suppliers.map((supplier) => {
-                const { _id, __v, ...props } = supplier.toJSON()
-                return { id: _id, ...props }
+                return { id: supplier._id, name: supplier.name, phone: supplier.phone, email: supplier.email, address: supplier.address }
             })
 
             res.status(200).json({
@@ -54,8 +45,7 @@ export default {
                 })
             }
 
-            const { _id, __v, ...props } = supplier.toJSON()
-            const data = { id: _id, ...props }
+            const data = { id: supplier._id, name: supplier.name, phone: supplier.phone, email: supplier.email, address: supplier.address }
 
             res.status(200).json({
                 message: "Berhasil mengambil data supplier.",
@@ -73,37 +63,14 @@ export default {
         const { id, name, phone, email, address } = req.body as unknown as TSupplier
 
         try {
-            await supplierDataValidation.validate({ id, name, phone, email, address })
-
-            const existingSupplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
-
-            if (existingSupplier) {
-                return res.status(400).json({
-                    message: "Sudah ada supplier dengan ID ini.",
-                    data: null
-                })
-            }
-
-            const supplier = await SupplierModel.create({ _id: id, name, phone, email, address })
-
-            const { _id, __v, ...props } = supplier.toJSON()
-            const data = { id: _id, ...props }
+            await SupplierModel.create({ _id: id, name, phone, email, address })
 
             res.status(201).json({
                 message: "Berhasil menambahkan supplier.",
-                data
+                data: null
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-            
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
@@ -115,39 +82,14 @@ export default {
         const { name, phone, email, address } = req.body as unknown as TSupplier
 
         try {
-            const supplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
-
-            if (!supplier) {
-                return res.status(404).json({
-                    message: "Supplier tidak ditemukan.",
-                    data: null
-                })
-            }
-
-            const updatedSupplier = await SupplierModel.findOneAndUpdate(
-                { _id: id.toUpperCase() },
-                { name, phone, email, address },
-                { new: true }
-            )
-
-            const { _id, __v, ...props } = updatedSupplier!.toJSON()
-            const data = { id: _id, ...props }
+            await SupplierModel.updateOne({ _id: id.toUpperCase() }, { name, phone, email, address })
 
             res.status(200).json({
                 message: "Berhasil mengubah data supplier.",
-                data
+                data: null
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-            
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
@@ -158,16 +100,7 @@ export default {
         const { id } = req.params
 
         try {
-            const supplier = await SupplierModel.findOne({ _id: id.toUpperCase() })
-
-            if (!supplier) {
-                return res.status(404).json({
-                    message: "Supplier tidak ditemukan.",
-                    data: null
-                })
-            }
-
-            await SupplierModel.findOneAndDelete({ _id: id.toUpperCase() })
+            await SupplierModel.deleteOne({ _id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Berhasil menghapus supplier.",

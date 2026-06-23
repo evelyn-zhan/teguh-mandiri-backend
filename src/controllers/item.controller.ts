@@ -1,19 +1,12 @@
 import { Request, Response } from "express"
-import * as Yup from "yup"
 
 import ItemModel from "../models/item.model"
 
-type TItem = {
+export type TItem = {
     id: string
     name: string
     stock: number
 }
-
-const itemDataValidation = Yup.object({
-    id: Yup.string().required("ID Barang diperlukan."),
-    name: Yup.string().required("Nama Barang diperlukan."),
-    stock: Yup.number().default(0)
-})
 
 export default {
     async getAllItems(req: Request, res: Response) {
@@ -21,8 +14,7 @@ export default {
             const items = await ItemModel.find()
 
             const data = items.map((item) => {
-                const { _id, __v, ...props } = item.toJSON()
-                return { id: _id, ...props }
+                return { id: item._id, name: item.name, stock: item.stock }
             })
 
             res.status(200).json({
@@ -50,8 +42,7 @@ export default {
                 })
             }
 
-            const { _id, __v, ...props } = item.toJSON()
-            const data = { id: _id, ...props }
+            const data = { id: item._id, name: item.name, stock: item.stock }
 
             res.status(200).json({
                 message: "Berhasil mengambil data barang.",
@@ -69,37 +60,14 @@ export default {
         const { id, name, stock } = req.body as unknown as TItem
         
         try {
-            await itemDataValidation.validate({ id, name, stock })
-
-            const existingItem = await ItemModel.findOne({ _id: id.toUpperCase() })
-
-            if (existingItem) {
-                return res.status(400).json({
-                    message: "Sudah ada barang dengan ID ini.",
-                    data: null
-                })
-            }
-
-            const item = await ItemModel.create({ _id: id, name, stock })
-            
-            const { _id, __v, ...props } = item.toJSON()
-            const data = { id: _id, ...props }
+            await ItemModel.create({ _id: id, name, stock })
 
             res.status(201).json({
                 message: "Berhasil menambahkan barang.",
-                data
+                data: null
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-            
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
@@ -111,39 +79,14 @@ export default {
         const { name, stock } = req.body as unknown as TItem
 
         try {
-            const item = await ItemModel.findOne({ _id: id.toUpperCase() })
-
-            if (!item) {
-                return res.status(404).json({
-                    message: "Barang tidak ditemukan.",
-                    data: null
-                })
-            }
-
-            const updatedItem = await ItemModel.findOneAndUpdate(
-                { _id: id.toUpperCase() },
-                { name, stock },
-                { new: true }
-            )
-
-            const { _id, __v, ...props } = updatedItem!.toJSON()
-            const data = { id: _id, ...props }
+            await ItemModel.updateOne({ _id: id.toUpperCase() }, { name, stock })
             
             res.status(200).json({
                 message: "Berhasil mengubah data barang.",
-                data
+                data: null
             })
         }
         catch (error) {
-            const err = error as unknown as Error
-
-            if (err.name == "ValidationError") {
-                return res.status(400).json({
-                    message: err.message,
-                    data: null
-                })
-            }
-            
             res.status(500).json({
                 message: "Internal Server Error",
                 data: null
@@ -154,16 +97,7 @@ export default {
         const { id } = req.params
 
         try {
-            const item = await ItemModel.findOne({ _id: id.toUpperCase() })
-
-            if (!item) {
-                return res.status(404).json({
-                    message: "Barang tidak ditemukan.",
-                    data: null
-                })
-            }
-
-            await ItemModel.findOneAndDelete({ _id: id.toUpperCase() })
+            await ItemModel.deleteOne({ _id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Berhasil menghapus barang.",
