@@ -1,5 +1,4 @@
 import { Request, Response } from "express"
-import * as Yup from "yup"
 
 import SupplierModel from "../models/supplier.model"
 
