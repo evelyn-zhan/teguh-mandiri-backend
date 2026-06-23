@@ -29,7 +29,8 @@ const SupplierSchema = new Schema<ISupplier>(
             required: true
         },
         address: {
-            type: Schema.Types.String
+            type: Schema.Types.String,
+            default: ""
         }
     },
     {

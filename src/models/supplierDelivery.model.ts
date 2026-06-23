@@ -2,15 +2,15 @@ import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
 
+export interface IOrderSupplier {
+    id: string
+    name: string
+}
+
 export interface IDeliveredItem {
     id: string
     name: string
     quantity: number
-}
-
-export interface IOrderSupplier {
-    id: string
-    name: string
 }
 
 export interface ISupplierDelivery {
@@ -20,6 +20,23 @@ export interface ISupplierDelivery {
     items: IDeliveredItem[]
     deliveryDate: Date
 }
+
+const OrderSupplierSchema = new Schema<IOrderSupplier> (
+    {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
+        name: {
+            type: Schema.Types.String,
+            required: true
+        }
+    },
+    {
+        _id: false,
+        timestamps: false
+    }
+)
 
 const DeliveredItemSchema = new Schema<IDeliveredItem> (
     {
@@ -33,23 +50,6 @@ const DeliveredItemSchema = new Schema<IDeliveredItem> (
         },
         quantity: {
             type: Schema.Types.Number,
-            required: true
-        }
-    },
-    {
-        _id: false,
-        timestamps: false
-    }
-)
-
-const OrderSupplierSchema = new Schema<IOrderSupplier> (
-    {
-        id: {
-            type: Schema.Types.String,
-            required: true
-        },
-        name: {
-            type: Schema.Types.String,
             required: true
         }
     },
@@ -89,6 +89,7 @@ const SupplierDeliverySchema = new Schema<ISupplierDelivery> (
 
 SupplierDeliverySchema.pre("save", async function (this: ISupplierDelivery) {
     this._id = this._id.toUpperCase()
+    this.purchaseId = this.purchaseId.toUpperCase()
 })
 
 const SupplierDeliveryModel = mongoose.model("supplierDelivery", SupplierDeliverySchema)

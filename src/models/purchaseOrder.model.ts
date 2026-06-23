@@ -2,16 +2,16 @@ import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
 
+export interface IOrderSupplier {
+    id: string
+    name: string
+}
+
 export interface IOrderItem {
     id: string
     name: string
     quantity: number
     received: number
-}
-
-export interface IOrderSupplier {
-    id: string
-    name: string
 }
 
 export interface IPurchaseOrder {
@@ -22,6 +22,23 @@ export interface IPurchaseOrder {
     expectedDeliveryDate: Date
     isCompleted: boolean
 }
+
+const OrderSupplierSchema = new Schema<IOrderSupplier> (
+    {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
+        name: {
+            type: Schema.Types.String,
+            required: true
+        }
+    },
+    {
+        _id: false,
+        timestamps: false
+    }
+)
 
 const OrderItemSchema = new Schema<IOrderItem> (
     {
@@ -40,23 +57,6 @@ const OrderItemSchema = new Schema<IOrderItem> (
         received: {
             type: Schema.Types.Number,
             default: 0
-        }
-    },
-    {
-        _id: false,
-        timestamps: false
-    }
-)
-
-const OrderSupplierSchema = new Schema<IOrderSupplier> (
-    {
-        id: {
-            type: Schema.Types.String,
-            required: true
-        },
-        name: {
-            type: Schema.Types.String,
-            required: true
         }
     },
     {
