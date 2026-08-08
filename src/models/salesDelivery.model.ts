@@ -2,6 +2,11 @@ import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
 
+export interface IOrderCustomer {
+    id: string
+    name: string
+}
+
 export interface IDeliveredItem {
     id: string
     name: string
@@ -11,9 +16,27 @@ export interface IDeliveredItem {
 export interface ISalesDelivery {
     _id: string
     purchaseId: string
+    customer: IOrderCustomer
     items: IDeliveredItem[]
     deliveryDate: Date
 }
+
+const OrderCustomerSchema = new Schema<IOrderCustomer> (
+    {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
+        name: {
+            type: Schema.Types.String,
+            required: true
+        }
+    },
+    {
+        _id: false,
+        timestamps: false
+    }
+)
 
 const DeliveredItemSchema = new Schema<IDeliveredItem> (
     {
@@ -46,6 +69,10 @@ const SalesDeliverySchema = new Schema<ISalesDelivery> (
             type: Schema.Types.String,
             required: true
         },
+        customer: {
+            type: OrderCustomerSchema,
+            required: true
+        },
         items: {
             type: [DeliveredItemSchema],
             required: true
@@ -62,6 +89,7 @@ const SalesDeliverySchema = new Schema<ISalesDelivery> (
 
 SalesDeliverySchema.pre("save", async function (this: ISalesDelivery) {
     this._id = this._id.toUpperCase()
+    this.purchaseId = this.purchaseId.toUpperCase()
 })
 
 const SalesDeliveryModel = mongoose.model("salesDelivery", SalesDeliverySchema)
