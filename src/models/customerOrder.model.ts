@@ -2,6 +2,11 @@ import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
 
+export interface ICustomer {
+    id: string
+    name: string
+}
+
 export interface IOrderItem {
     id: string
     name: string
@@ -11,11 +16,29 @@ export interface IOrderItem {
 
 export interface ICustomerOrder {
     _id: string
+    customer: ICustomer
     items: IOrderItem[]
     createdAt: Date
     expectedDeliveryDate: Date
     isCompleted: boolean
 }
+
+const CustomerSchema = new Schema<ICustomer> (
+    {
+        id: {
+            type: Schema.Types.String,
+            required: true
+        },
+        name: {
+            type: Schema.Types.String,
+            required: true
+        }
+    },
+    {
+        _id: false,
+        timestamps: false
+    }
+)
 
 const OrderItemSchema = new Schema<IOrderItem> (
     {
@@ -46,6 +69,10 @@ const CustomerOrderSchema = new Schema<ICustomerOrder> (
     {
         _id: {
             type: Schema.Types.String,
+            required: true
+        },
+        customer: {
+            type: CustomerSchema,
             required: true
         },
         items: {
