@@ -4,6 +4,11 @@ import SalesDeliveryModel from "../models/salesDelivery.model"
 import CustomerOrderModel from "../models/purchaseOrder.model"
 import ItemModel from "../models/item.model"
 
+export type TOrderCustomer = {
+    id: string
+    name: string
+}
+
 export type TDeliveredItem = {
     id: string
     name: string
@@ -13,6 +18,7 @@ export type TDeliveredItem = {
 export type TSalesDelivery = {
     id: string
     purchaseId: string
+    customer: TOrderCustomer
     items: TDeliveredItem[]
     deliveryDate: Date
 }
@@ -23,7 +29,7 @@ export default {
             const deliveries = await SalesDeliveryModel.find()
 
             const data = deliveries.map((delivery) => {
-                return { id: delivery._id, purchaseId: delivery.purchaseId, items: delivery.items, deliveryDate: delivery.deliveryDate }
+                return { id: delivery._id, purchaseId: delivery.purchaseId, customer: delivery.customer, items: delivery.items, deliveryDate: delivery.deliveryDate }
             })
 
             res.status(200).json({
@@ -51,7 +57,7 @@ export default {
                 })
             }
 
-            const data = { id: delivery._id, purchaseId: delivery.purchaseId, items: delivery.items, deliveryDate: delivery.deliveryDate }
+            const data = { id: delivery._id, purchaseId: delivery.purchaseId, customer: delivery.customer, items: delivery.items, deliveryDate: delivery.deliveryDate }
 
             res.status(200).json({
                 message: "Berhasil mengambil data pengiriman barang.",
@@ -66,42 +72,53 @@ export default {
         }
     },
     async addDelivery(req: Request, res: Response) {
-        const { id, purchaseId, items, deliveryDate } = req.body as unknown as TSalesDelivery
+        const { id, purchaseId, customer, items, deliveryDate } = req.body as unknown as TSalesDelivery
 
         try {
+            let order = await CustomerOrderModel.findOne({ _id: purchaseId.toUpperCase() })
+            
             for (const item of items) {
+                const matchingItem = order!.items.find((orderedItem) => orderedItem.id == item.id.toUpperCase())
+
+                if (matchingItem!.received + item.quantity > matchingItem!.quantity) {
+                    return res.status(400).json({
+                        message: `Total pengiriman untuk barang dengan ID ${item.id} melebihi jumlah yang dipesan.`,
+                        data: null
+                    })
+                }
+            
                 await CustomerOrderModel.updateOne(
                     { _id: purchaseId.toUpperCase(), "items.id": item.id },
                     { $inc: { "items.$.received": item.quantity } }
                 )
-
+            
                 await ItemModel.updateOne(
                     { _id: item.id },
                     { $inc: { stock: item.quantity } }
                 )
             }
-
-            const order = await CustomerOrderModel.findOne({ _id: purchaseId.toUpperCase() })
+            
+            order = await CustomerOrderModel.findOne({ _id: purchaseId.toUpperCase() })
             
             let isCompleted = true
-
+            
             for (const item of order!.items) {
                 if (item.received != item.quantity) {
                     isCompleted = false
                 }
             }
-
+            
             if (isCompleted) {
                 await CustomerOrderModel.updateOne(
                     { _id: purchaseId.toUpperCase() },
-                    { $set: { isCompleted: true } }
+                    { $set: { isCompleted } }
                 )
             }
-
+            
             const parsedDeliveryDate = new Date(deliveryDate)
-
-            await SalesDeliveryModel.create({ _id: id, purchaseId, items, deliveryDate: parsedDeliveryDate })
-
+            
+            await SalesDeliveryModel.create({ _id: id, purchaseId, customer, items, deliveryDate: parsedDeliveryDate })
+            
             res.status(201).json({
                 message: "Berhasil menambahkan pengiriman barang.",
                 data: null
@@ -116,7 +133,7 @@ export default {
     },
     async updateDelivery(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
-        const { purchaseId, items, deliveryDate } = req.body as unknown as TSalesDelivery
+        const { purchaseId, customer, items, deliveryDate } = req.body as unknown as TSalesDelivery
 
         try {
             if (items) {
@@ -165,7 +182,7 @@ export default {
         const { id } = req.params
 
         try {
-            await SalesDeliveryModel.findOneAndDelete({ _id: id.toUpperCase() })
+            await SalesDeliveryModel.deleteOne({ _id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Berhasil menghapus pengiriman barang.",
