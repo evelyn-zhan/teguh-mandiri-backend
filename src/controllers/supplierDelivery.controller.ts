@@ -75,7 +75,18 @@ export default {
         const { id, purchaseId, supplier, items, deliveryDate } = req.body as unknown as TSupplierDelivery
 
         try {
+            let order = await PurchaseOrderModel.findOne({ _id: purchaseId.toUpperCase() })
+
             for (const item of items) {
+                const matchingItem = order!.items.find((orderedItem) => orderedItem.id == item.id.toUpperCase())
+
+                if (matchingItem!.received + item.quantity > matchingItem!.quantity) {
+                    return res.status(400).json({
+                        message: `Total pengiriman untuk barang dengan ID ${item.id} melebihi jumlah yang dipesan.`,
+                        data: null
+                    })
+                }
+
                 await PurchaseOrderModel.updateOne(
                     { _id: purchaseId.toUpperCase(), "items.id": item.id },
                     { $inc: { "items.$.received": item.quantity } }
@@ -87,7 +98,7 @@ export default {
                 )
             }
 
-            const order = await PurchaseOrderModel.findOne({ _id: purchaseId.toUpperCase() })
+            order = await PurchaseOrderModel.findOne({ _id: purchaseId.toUpperCase() })
 
             let isCompleted = true
 
