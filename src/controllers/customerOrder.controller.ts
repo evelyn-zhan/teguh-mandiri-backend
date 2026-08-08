@@ -2,6 +2,11 @@ import { Request, Response } from "express"
 
 import CustomerOrderModel from "../models/customerOrder.model"
 
+export type TCustomer = {
+    id: string
+    name: string
+}
+
 export type TOrderItem = {
     id: string
     name: string
@@ -11,6 +16,7 @@ export type TOrderItem = {
 
 export type TCustomerOrder = {
     id: string
+    customer: TCustomer
     items: TOrderItem[]
     createdAt: Date
     expectedDeliveryDate: Date
@@ -22,17 +28,20 @@ export default {
         const { isCompleted } = req.query
 
         try {
-            let filter = {}
-            if (isCompleted != undefined && isCompleted) {
-                filter = (isCompleted == "true" ? { isCompleted: true } : { isCompleted: false })
+            const filter: Record<string, any> = {}
+            
+            if (isCompleted == "true") {
+                filter.isCompleted = true
+            } else if (isCompleted == "false") {
+                filter.isCompleted = false
             }
-
+            
             const orders = await CustomerOrderModel.find(filter)
-
+            
             const data = orders.map((order) => {
-                return { id: order._id, items: order.items, createdAt: order.createdAt, expectedDeliveryDate: order.expectedDeliveryDate, isCompleted: order.isCompleted }
+                return { id: order._id, customer: order.customer, items: order.items, createdAt: order.createdAt, expectedDeliveryDate: order.expectedDeliveryDate, isCompleted: order.isCompleted }
             })
-
+            
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
                 data
@@ -58,7 +67,7 @@ export default {
                 })
             }
 
-            const data = { id: order._id, items: order.items, createdAt: order.createdAt, expectedDeliveryDate: order.expectedDeliveryDate, isCompleted: order.isCompleted }
+            const data = { id: order._id, customer: order.customer, items: order.items, createdAt: order.createdAt, expectedDeliveryDate: order.expectedDeliveryDate, isCompleted: order.isCompleted }
 
             res.status(200).json({
                 message: "Berhasil mengambil data pemesanan barang.",
@@ -73,14 +82,14 @@ export default {
         }
     },
     async addOrder(req: Request, res: Response) {
-        const { id, items, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
+        const { id, customer, items, createdAt, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
 
         try {
-            const parsedCreatedAt = new Date(Date.now())
+            const parsedCreatedAt = new Date(createdAt || Date.now())
             const parsedExpectedDeliveryDate = new Date(expectedDeliveryDate)
-
-            await CustomerOrderModel.create({ _id: id, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate })
-
+            
+            await CustomerOrderModel.create({ _id: id, customer, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate })
+            
             res.status(201).json({
                 message: "Berhasil menambahkan pemesanan barang.",
                 data: null
@@ -95,16 +104,18 @@ export default {
     },
     async updateOrder(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
-        const { items, createdAt, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
+        const { customer, items, createdAt, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
 
         try {
-            const order = await CustomerOrderModel.findOne({ _id: id.toUpperCase() })
-
-            const parsedCreatedAt = createdAt ? new Date(createdAt) : order!.createdAt
-            const parsedExpectedDeliveryDate = expectedDeliveryDate ? new Date(expectedDeliveryDate) : order!.expectedDeliveryDate
-
-            await CustomerOrderModel.updateOne({ _id: id.toUpperCase() }, { items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate })
-
+            const newData: Record<string, any> = {}
+            
+            if (customer) newData.customer = customer
+            if (items) newData.items = items
+            if (createdAt) newData.createdAt = new Date(createdAt)
+            if (expectedDeliveryDate) newData.expectedDeliveryDate = new Date(expectedDeliveryDate)
+            
+            await CustomerOrderModel.updateOne({ _id: id.toUpperCase() }, newData)
+            
             res.status(200).json({
                 message: "Berhasil mengubah data pemesanan barang.",
                 data: null
