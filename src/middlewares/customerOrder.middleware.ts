@@ -5,10 +5,15 @@ import * as Yup from "yup"
 import { TCustomerOrder } from "../controllers/customerOrder.controller"
 
 import CustomerOrderModel from "../models/customerOrder.model"
+import CustomerModel from "../models/customer.model"
 import ItemModel from "../models/item.model"
 
 const customerOrderDataValidation = Yup.object({
     id: Yup.string().required("ID Pemesanan diperlukan."),
+    customer: Yup.object({
+        id: Yup.string().required("ID Pelanggan diperlukan."),
+        name: Yup.string().required("Nama Pelanggan diperlukan.")
+    }),
     items: Yup.array().of(
         Yup.object({
             id: Yup.string().required("ID Barang diperlukan."),
@@ -25,12 +30,13 @@ const customerOrderDataValidation = Yup.object({
 
 export default {
     async validateCustomerOrderData(req: Request, res: Response, next: NextFunction) {
-        const { id, items, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
+        const { id, customer, items, createdAt, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
 
         try {
+            const parsedCreatedAt = new Date(createdAt || Date.now())
             const parsedExpectedDeliveryDate = new Date(expectedDeliveryDate)
 
-            await customerOrderDataValidation.validate({ id, items, expectedDeliveryDate: parsedExpectedDeliveryDate })
+            await customerOrderDataValidation.validate({ id, customer, items, createdAt: parsedCreatedAt, expectedDeliveryDate: parsedExpectedDeliveryDate })
             
             next()
         }
@@ -45,9 +51,9 @@ export default {
     async validateCustomerOrderId(req: Request<{ id: string }>, res: Response, next: NextFunction) {
         const { id } = req.params
 
-        const existingOrder = await CustomerOrderModel.findOne({ _id: id.toUpperCase() })
+        const order = await CustomerOrderModel.findOne({ _id: id.toUpperCase() })
 
-        if (!existingOrder) {
+        if (!order) {
             return res.status(404).json({
                 message: "Pemesanan tidak ditemukan.",
                 data: null
@@ -56,7 +62,6 @@ export default {
 
         next()
     },
-
     async validateCustomerOrderExistance(req: Request<{ id: string }>, res: Response, next: NextFunction) {
         const { id } = req.body
 
@@ -72,7 +77,17 @@ export default {
         next()
     },
     async validateCustomerOrderRefs(req: Request, res: Response, next: NextFunction) {
-        const { items } = req.body
+        const { customer, items } = req.body
+
+        if (customer) {
+            const existingCustomer = await CustomerModel.findOne({ _id: customer.id })
+            if (!existingCustomer) {
+                return res.status(404).json({
+                    message: `Customer dengan ID ${customer.id} tidak ditemukan.`,
+                    data: null
+                })
+            }
+        }
 
         if (items) {
             for (const item of items) {
