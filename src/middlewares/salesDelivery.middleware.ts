@@ -6,11 +6,15 @@ import { TSalesDelivery } from "../controllers/salesDelivery.controller"
 
 import SalesDeliveryModel from "../models/salesDelivery.model"
 import CustomerOrderModel from "../models/customerOrder.model"
-import ItemModel from "../models/item.model"
+import CustomerModel from "../models/customer.model"
 
 const salesDeliveryDataValidation = Yup.object({
     id: Yup.string().required("ID Pengiriman diperlukan."),
     purchaseId: Yup.string().required("ID Pemesanan diperlukan."),
+    customer: Yup.object({
+        id: Yup.string().required("ID Pelanggan diperlukan."),
+        name: Yup.string().required("Nama Pelanggan diperlukan.")
+    }),
     items: Yup.array().of(
         Yup.object({
             id: Yup.string().required("ID Barang diperlukan."),
@@ -25,13 +29,11 @@ const salesDeliveryDataValidation = Yup.object({
 
 export default {
     async validateSalesDeliveryData(req: Request, res: Response, next: NextFunction) {
-        const { id, purchaseId, items, deliveryDate } = req.body as TSalesDelivery
+        const { id, purchaseId, customer, items, deliveryDate } = req.body as TSalesDelivery
 
         try {
             const parsedDeliveryDate = new Date(deliveryDate)
-
-            await salesDeliveryDataValidation.validate({ id, purchaseId, items, deliveryDate: parsedDeliveryDate })
-            
+            await salesDeliveryDataValidation.validate({ id, purchaseId, customer, items, deliveryDate: parsedDeliveryDate })
             next()
         } catch (error) {
             const err = error as unknown as Error
@@ -71,13 +73,31 @@ export default {
     },
     async validateSalesDeliveryRefs(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id || req.body.id
-        const { purchaseId, items } = req.body
+        const { purchaseId, customer, items } = req.body
 
         if (purchaseId) {
             const existingOrder = await CustomerOrderModel.findOne({ _id: purchaseId.toUpperCase() })
             if (!existingOrder) {
                 return res.status(404).json({
                     message: `Pemesanan dengan ID ${purchaseId} tidak ditemukan.`,
+                    data: null
+                })
+            }
+        }
+
+        if (customer) {
+            const existingCustomer = await CustomerModel.findOne({ _id: customer.id.toUpperCase() })
+            if (!existingCustomer) {
+                return res.status(404).json({
+                    message: `Pelanggan dengan ID ${customer.id} tidak ditemukan.`,
+                    data: null
+                })
+            }
+        
+            const matchingCustomer = await CustomerOrderModel.findOne({ _id: purchaseId.toUpperCase(), "customer.id": customer.id.toUpperCase() })
+            if (!matchingCustomer) {
+                return res.status(400).json({
+                    message: `Pelanggan dengan ID ${customer.id} tidak ada pada pemesanan yang berkaitan dengan pengiriman ini.`,
                     data: null
                 })
             }
