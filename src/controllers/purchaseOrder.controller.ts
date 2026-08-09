@@ -107,6 +107,15 @@ export default {
         const { supplier, items, createdAt, expectedDeliveryDate } = req.body as unknown as TPurchaseOrder
 
         try {
+            for (const item of items) {
+                if (item.quantity < item.received) {
+                    return res.status(400).json({
+                        message: "Jumlah barang yang dipesan tidak bisa kurang dari jumlah barang yang telah diterima.",
+                        data: null
+                    })
+                }
+            }
+
             const newData: Record<string, any> = {}
 
             if (supplier) newData.supplier = supplier

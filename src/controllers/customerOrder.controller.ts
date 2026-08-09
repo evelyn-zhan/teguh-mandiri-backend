@@ -107,6 +107,15 @@ export default {
         const { customer, items, createdAt, expectedDeliveryDate } = req.body as unknown as TCustomerOrder
 
         try {
+            for (const item of items) {
+                if (item.quantity < item.delivered) {
+                    return res.status(400).json({
+                        message: "Jumlah barang yang dipesan tidak bisa kurang dari jumlah barang yang telah diterima.",
+                        data: null
+                    })
+                }
+            }
+
             const newData: Record<string, any> = {}
             
             if (customer) newData.customer = customer
