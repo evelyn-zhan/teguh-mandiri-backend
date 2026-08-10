@@ -1,6 +1,5 @@
-import { Request, Response } from "express"
-
-import ItemModel from "../models/item.model"
+import { Request, Response } from 'express'
+import ItemModel from '../models/item.model'
 
 export type TItem = {
     id: string
@@ -18,32 +17,30 @@ export default {
             })
 
             res.status(200).json({
-                message: "Berhasil mengambil data barang.",
+                message: 'Berhasil mengambil data barang.',
                 data
             })
         }
         catch (error) {
             res.status(500).json({
-                message: "Internal Server Error",
+                message: 'Internal Server Error',
                 data: null
             })
         }
     },
     async getItemById(req: Request<{ id: string }>, res: Response) {
-        const { id } = req.params
-
         try {
             const item = res.locals.item
             const data = { id: item.id, name: item.name, stock: item.stock }
 
             res.status(200).json({
-                message: "Berhasil mengambil data barang.",
+                message: 'Berhasil mengambil data barang.',
                 data
             })
         }
         catch (error) {
             res.status(500).json({
-                message: "Internal Server Error",
+                message: 'Internal Server Error',
                 data: null
             })
         }
@@ -52,16 +49,16 @@ export default {
         const { id, name, stock } = req.body as unknown as TItem
         
         try {
-            await ItemModel.create({ id: id, name, stock })
+            await ItemModel.create({ id, name, stock })
 
             res.status(201).json({
-                message: "Berhasil menambahkan barang.",
+                message: 'Berhasil menambahkan barang.',
                 data: null
             })
         }
         catch (error) {
             res.status(500).json({
-                message: "Internal Server Error",
+                message: 'Internal Server Error',
                 data: null
             })
         }
@@ -74,13 +71,13 @@ export default {
             await ItemModel.updateOne({ id: id.toUpperCase() }, { name, stock })
             
             res.status(200).json({
-                message: "Berhasil mengubah data barang.",
+                message: 'Berhasil mengubah data barang.',
                 data: null
             })
         }
         catch (error) {
             res.status(500).json({
-                message: "Internal Server Error",
+                message: 'Internal Server Error',
                 data: null
             })
         }
@@ -92,13 +89,13 @@ export default {
             await ItemModel.deleteOne({ id: id.toUpperCase() })
 
             res.status(200).json({
-                message: "Berhasil menghapus barang.",
+                message: 'Berhasil menghapus barang.',
                 data: null
             })
         }
         catch (error) {
             res.status(500).json({
-                message: "Internal Server Error",
+                message: 'Internal Server Error',
                 data: null
             })
         }
