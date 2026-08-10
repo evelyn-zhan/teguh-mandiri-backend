@@ -1,14 +1,14 @@
-import { Request, Response, NextFunction } from "express"
+import { Request, Response, NextFunction } from 'express'
 
-import * as Yup from "yup"
+import * as Yup from 'yup'
 
-import { TItem } from "../controllers/item.controller"
+import { TItem } from '../controllers/item.controller'
 
-import ItemModel from "../models/item.model"
+import ItemModel from '../models/item.model'
 
 const itemDataValidation = Yup.object({
-    id: Yup.string().required("ID Barang diperlukan."),
-    name: Yup.string().required("Nama Barang diperlukan."),
+    id: Yup.string().required('ID Barang diperlukan.'),
+    name: Yup.string().required('Nama Barang diperlukan.'),
     stock: Yup.number().default(0)
 })
 
@@ -34,7 +34,7 @@ export default {
 
         if (!item) {
             return res.status(404).json({
-                message: "Barang tidak ditemukan.",
+                message: 'Barang tidak ditemukan.',
                 data: null
             })
         }
@@ -49,7 +49,7 @@ export default {
 
         if (item) {
             return res.status(400).json({
-                message: "Sudah ada barang dengan ID ini.",
+                message: 'Sudah ada barang dengan ID ini.',
                 data: null
             })
         }
