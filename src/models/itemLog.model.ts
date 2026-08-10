@@ -2,13 +2,14 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export interface IStockMutation {
+export interface IItemLog {
     itemId: string
     inQuantity: number
     outQuantity: number
+    createdAt: Date
 }
 
-const StockMutationSchema = new Schema<IStockMutation>(
+const ItemLogSchema = new Schema<IItemLog>(
     {
         itemId: {
             type: Schema.Types.String,
@@ -21,14 +22,18 @@ const StockMutationSchema = new Schema<IStockMutation>(
         outQuantity: {
             type: Schema.Types.Number,
             required: true
+        },
+        createdAt: {
+            type: Schema.Types.Date,
+            default: Date.now
         }
     }
 )
 
-StockMutationSchema.pre('save', async function (this: IStockMutation) {
+ItemLogSchema.pre('save', async function (this: IItemLog) {
     this.itemId = this.itemId.toUpperCase()
 })
 
-const StockMutationModel = mongoose.model('stockMutation', StockMutationSchema)
+const ItemLogModel = mongoose.model('ItemLog', ItemLogSchema)
 
-export default StockMutationModel
+export default ItemLogModel
