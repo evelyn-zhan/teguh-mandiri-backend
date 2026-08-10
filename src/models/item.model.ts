@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
@@ -28,10 +28,10 @@ const ItemSchema = new Schema<IItem>(
     }
 )
 
-ItemSchema.pre("save", async function (this: IItem) {
+ItemSchema.pre('save', async function (this: IItem) {
     this.id = this.id.toUpperCase()
 })
 
-const ItemModel = mongoose.model("item", ItemSchema)
+const ItemModel = mongoose.model('item', ItemSchema)
 
 export default ItemModel
