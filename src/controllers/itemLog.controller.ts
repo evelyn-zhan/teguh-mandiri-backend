@@ -29,6 +29,25 @@ export default {
             })
         }
     },
+    async getLogById(req: Request<{ id: string }>, res: Response) {
+        const { id } = req.params
+
+        try {
+            const log = await ItemLogModel.findOne({ _id: id.toUpperCase() })
+            const data = { itemId: log!.itemId, inQuantity: log!.inQuantity, outQuantity: log!.outQuantity, createdAt: log!.createdAt }
+    
+            res.status(200).json({
+                message: 'Berhasil mengambil data mutasi stok.',
+                data
+            })
+        }
+        catch (error) {
+            res.status(500).json({
+            message: 'Internal Server Error',
+                data: null
+            })
+        }
+    },
     async addLog(req: Request, res: Response) {
         const { itemId, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
         
