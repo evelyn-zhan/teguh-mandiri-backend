@@ -28,10 +28,9 @@ export default {
             })
         }
     },
-    async validateItemId(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    async checkItemExistence(req: Request<{ id: string }>, res: Response, next: NextFunction) {
         const { id } = req.params
-
-        const item = await ItemModel.findOne({ _id: id.toUpperCase() })
+        const item = await ItemModel.findOne({ id: id.toUpperCase() })
 
         if (!item) {
             return res.status(404).json({
@@ -40,12 +39,13 @@ export default {
             })
         }
 
+        res.locals.item = item
+        
         next()
     },
-    async validateItemExistance(req: Request, res: Response, next: NextFunction) {
+    async checkDuplicateItem(req: Request, res: Response, next: NextFunction) {
         const { id } = req.body
-
-        const item = await ItemModel.findOne({ _id: id.toUpperCase() })
+        const item = await ItemModel.findOne({ id: id.toUpperCase() })
 
         if (item) {
             return res.status(400).json({
@@ -53,6 +53,8 @@ export default {
                 data: null
             })
         }
+
+        res.locals.item = item
 
         next()
     }

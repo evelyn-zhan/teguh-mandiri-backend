@@ -14,7 +14,7 @@ export default {
             const items = await ItemModel.find()
 
             const data = items.map((item) => {
-                return { id: item._id, name: item.name, stock: item.stock }
+                return { id: item.id, name: item.name, stock: item.stock }
             })
 
             res.status(200).json({
@@ -33,16 +33,8 @@ export default {
         const { id } = req.params
 
         try {
-            const item = await ItemModel.findOne({ _id: id.toUpperCase() })
-
-            if (!item) {
-                return res.status(404).json({
-                    message: "Barang tidak ditemukan.",
-                    data: null
-                })
-            }
-
-            const data = { id: item._id, name: item.name, stock: item.stock }
+            const item = res.locals.item
+            const data = { id: item.id, name: item.name, stock: item.stock }
 
             res.status(200).json({
                 message: "Berhasil mengambil data barang.",
@@ -60,7 +52,7 @@ export default {
         const { id, name, stock } = req.body as unknown as TItem
         
         try {
-            await ItemModel.create({ _id: id, name, stock })
+            await ItemModel.create({ id: id, name, stock })
 
             res.status(201).json({
                 message: "Berhasil menambahkan barang.",
@@ -79,7 +71,7 @@ export default {
         const { name, stock } = req.body as unknown as TItem
 
         try {
-            await ItemModel.updateOne({ _id: id.toUpperCase() }, { name, stock })
+            await ItemModel.updateOne({ id: id.toUpperCase() }, { name, stock })
             
             res.status(200).json({
                 message: "Berhasil mengubah data barang.",
@@ -97,7 +89,7 @@ export default {
         const { id } = req.params
 
         try {
-            await ItemModel.deleteOne({ _id: id.toUpperCase() })
+            await ItemModel.deleteOne({ id: id.toUpperCase() })
 
             res.status(200).json({
                 message: "Berhasil menghapus barang.",
