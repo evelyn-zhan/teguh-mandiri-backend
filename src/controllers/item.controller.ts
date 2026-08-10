@@ -28,7 +28,7 @@ export default {
             })
         }
     },
-    async getItemById(req: Request<{ id: string }>, res: Response) {
+    async getItemById(req: Request, res: Response) {
         try {
             const item = res.locals.item
             const data = { id: item.id, name: item.name, stock: item.stock }
