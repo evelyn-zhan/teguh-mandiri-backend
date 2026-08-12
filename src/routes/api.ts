@@ -9,12 +9,12 @@ const router = express.Router()
 router.get('/items', itemController.getAllItems)
 router.get('/items/:id', itemMiddleware.checkItemExistence, itemController.getItemById)
 router.post('/items', itemMiddleware.validateItemData, itemMiddleware.checkDuplicateItem, itemController.addItem)
-router.put('/items/:id', itemMiddleware.checkItemExistence, itemMiddleware.validateItemData, itemController.updateItem)
+router.put('/items/:id', itemMiddleware.validateItemData, itemMiddleware.checkItemExistence, itemController.updateItem)
 router.delete('/items/:id', itemMiddleware.checkItemExistence, itemController.deleteItem)
 
 router.get('/item-logs', itemLogController.getAllLogs)
-router.get('/item-logs/:id', itemLogController.getLogById)
+router.get('/item-logs/:id', itemLogMiddleware.checkItemLogExistence, itemLogController.getLogById)
 router.post('/item-logs', itemLogMiddleware.validateItemLogData, itemLogController.addLog)
-router.put('/item-logs/:id', itemLogMiddleware.validateItemLogData, itemLogController.updateLog)
+router.put('/item-logs/:id', itemLogMiddleware.validateItemLogData, itemLogMiddleware.checkItemLogExistence, itemLogController.updateLog)
 
 export default router
