@@ -1,5 +1,8 @@
 import { Request, Response } from 'express'
+import { Types } from 'mongoose'
+
 import ItemModel from '../models/item.model'
+import ItemLogModel from '../models/itemLog.model'
 
 export type TItem = {
     id: string
@@ -65,10 +68,19 @@ export default {
     },
     async updateItem(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
-        const { name, stock } = req.body as unknown as TItem
+        const { id: newId, name } = req.body as unknown as TItem
 
         try {
-            await ItemModel.updateOne({ id: id.toUpperCase() }, { name, stock })
+            const item = res.locals.item
+
+            if (newId) {
+                const logs = await ItemLogModel.find({ itemId: item.id })
+                for (const log of logs) {
+                    await ItemLogModel.updateOne({ _id: new Types.ObjectId(log._id) }, { itemId: newId })
+                }
+            }
+
+            await ItemModel.updateOne({ id: id.toUpperCase() }, { id: newId, name })
             
             res.status(200).json({
                 message: 'Berhasil mengubah data barang.',
