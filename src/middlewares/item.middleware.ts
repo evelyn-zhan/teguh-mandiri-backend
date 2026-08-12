@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import * as Yup from 'yup'
+
 import { TItem } from '../controllers/item.controller'
+
 import ItemModel from '../models/item.model'
 
 const itemDataValidation = Yup.object({
@@ -50,8 +52,6 @@ export default {
                 data: null
             })
         }
-
-        res.locals.item = item
 
         next()
     }
