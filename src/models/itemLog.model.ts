@@ -6,7 +6,8 @@ export interface IItemLog {
     itemId: string
     inQuantity: number
     outQuantity: number
-    createdAt: Date
+    finalStock: number
+    createdAt: string
 }
 
 const ItemLogSchema = new Schema<IItemLog>(
@@ -23,9 +24,12 @@ const ItemLogSchema = new Schema<IItemLog>(
             type: Schema.Types.Number,
             required: true
         },
+        finalStock: {
+            type: Schema.Types.Number,
+        },
         createdAt: {
-            type: Schema.Types.Date,
-            default: Date.now
+            type: Schema.Types.String,
+            default: () => new Date().toISOString().split('T')[0]
         }
     }
 )
