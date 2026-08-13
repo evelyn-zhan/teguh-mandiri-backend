@@ -10,16 +10,17 @@ import ItemLogModel from '../models/itemLog.model'
 
 const itemLogValidation = Yup.object({
     itemId: Yup.string().required('ID Barang diperlukan.'),
+    itemName: Yup.string().required('Nama Barang diperlukan.'),
     inQuantity: Yup.number().required('Jumlah Barang Masuk diperlukan.'),
     outQuantity: Yup.number().required('Jumlah Barang Keluar diperlukan.')
 })
 
 export default {
     async validateItemLogData(req: Request, res: Response, next: NextFunction) {
-        const { itemId, inQuantity, outQuantity } = req.body as TItemLog
+        const { itemId, itemName, inQuantity, outQuantity } = req.body as TItemLog
 
         try {
-            await itemLogValidation.validate({ itemId, inQuantity, outQuantity })
+            await itemLogValidation.validate({ itemId, itemName, inQuantity, outQuantity })
 
             const item = await ItemModel.findOne({ id: itemId.toUpperCase() })
 

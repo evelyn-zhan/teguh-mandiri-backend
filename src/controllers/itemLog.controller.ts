@@ -6,6 +6,7 @@ import ItemLogModel from '../models/itemLog.model'
 
 export type TItemLog = {
     itemId: string
+    itemName: string
     inQuantity: number
     outQuantity: number
     finalStock: number
@@ -21,6 +22,7 @@ export default {
                 return {
                     _id: log._id,
                     itemId: log.itemId,
+                    itemName: log.itemName,
                     inQuantity: log.inQuantity,
                     outQuantity: log.outQuantity,
                     finalStock: log.finalStock,
@@ -47,6 +49,7 @@ export default {
             const data = {
                 _id: log._id,
                 itemId: log.itemId,
+                itemName: log.itemName,
                 inQuantity: log.inQuantity,
                 outQuantity: log.outQuantity,
                 finalStock: log.finalStock,
@@ -66,7 +69,7 @@ export default {
         }
     },
     async addLog(req: Request, res: Response) {
-        const { itemId, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
+        const { itemId, itemName, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
 
         const item = res.locals.item
 
@@ -85,7 +88,7 @@ export default {
             await ItemLogModel.findOneAndUpdate(
                 { itemId: itemId.toUpperCase(), createdAt },
                 {
-                    $set: { finalStock: 0 },
+                    $set: { itemName, finalStock: 0 },
                     $inc: { inQuantity, outQuantity }
                 },
                 { upsert: true, session }

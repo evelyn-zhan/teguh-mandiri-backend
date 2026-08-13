@@ -4,6 +4,7 @@ const Schema = mongoose.Schema
 
 export interface IItemLog {
     itemId: string
+    itemName: string
     inQuantity: number
     outQuantity: number
     finalStock: number
@@ -13,6 +14,10 @@ export interface IItemLog {
 const ItemLogSchema = new Schema<IItemLog>(
     {
         itemId: {
+            type: Schema.Types.String,
+            required: true
+        },
+        itemName: {
             type: Schema.Types.String,
             required: true
         },
