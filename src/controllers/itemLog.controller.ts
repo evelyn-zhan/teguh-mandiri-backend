@@ -41,9 +41,9 @@ export default {
         }
     },
     async getLogById(req: Request, res: Response) {
-        try {
-            const log = res.locals.itemLog
+        const log = res.locals.itemLog
 
+        try {
             const data = {
                 _id: log._id,
                 itemId: log.itemId,
@@ -68,12 +68,12 @@ export default {
     async addLog(req: Request, res: Response) {
         const { itemId, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
 
+        const item = res.locals.item
+
         const session = await mongoose.startSession()
         session.startTransaction()
         
         try {
-            const item = res.locals.item
-
             let finalStock = item.stock
 
             let logs = await ItemLogModel.find({ itemId: itemId.toUpperCase() }).session(session)
@@ -132,13 +132,13 @@ export default {
     async updateLog(req: Request, res: Response) {
         const { itemId, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
 
+        const currentLog = res.locals.itemLog
+        const item = res.locals.item
+
         const session = await mongoose.startSession()
         session.startTransaction()
 
         try {
-            const currentLog = res.locals.itemLog
-            const item = res.locals.item
-
             if (itemId.toUpperCase() == currentLog.itemId) {
                 let finalStock = item.stock
 
@@ -178,6 +178,72 @@ export default {
                 }
 
                 await ItemModel.updateOne({ id: itemId.toUpperCase() }, { stock: finalStock }).session(session)
+            }
+            else {
+                let prevItemFinalStock = currentLog.finalStock
+                let newItemFinalStock = item.stock
+
+                let logs = await ItemLogModel.find({ itemId: currentLog.itemId }).session(session)
+
+                for (const log of logs) {
+                    prevItemFinalStock = prevItemFinalStock - log.inQuantity + log.outQuantity
+                }
+
+                logs = await ItemLogModel.find({ itemId: itemId.toUpperCase() }).session(session)
+
+                for (const log of logs) {
+                    newItemFinalStock = newItemFinalStock - log.inQuantity + log.outQuantity
+                }
+
+                await ItemLogModel.deleteOne({ itemId: currentLog.itemId, createdAt: currentLog.createdAt }).session(session)
+
+                await ItemLogModel.findOneAndUpdate(
+                    { itemId: itemId.toUpperCase(), createdAt },
+                    {
+                        $set: { finalStock: 0 },
+                        $inc: { inQuantity, outQuantity }
+                    },
+                    { upsert: true, session }
+                )
+
+                logs = await ItemLogModel.find({ itemId: currentLog.itemId }).sort({ createdAt: 1 }).session(session)
+
+                for (const log of logs) {
+                    prevItemFinalStock += log.inQuantity - log.outQuantity
+
+                    if (prevItemFinalStock < 0) {
+                        await session.abortTransaction()
+                        session.endSession()
+
+                        return res.status(400).json({
+                            message: `Stok barang dengan kode ${currentLog.itemId} tidak mencukupi.`,
+                            data: null
+                        })
+                    }
+
+                    await ItemLogModel.updateOne({ _id: log._id }, { finalStock: prevItemFinalStock }).session(session)
+                }
+
+                logs = await ItemLogModel.find({ itemId: itemId.toUpperCase() }).sort({ createdAt: 1 }).session(session)
+
+                for (const log of logs) {
+                    newItemFinalStock += log.inQuantity - log.outQuantity
+
+                    if (newItemFinalStock < 0) {
+                        await session.abortTransaction()
+                        session.endSession()
+
+                        return res.status(400).json({
+                            message: `Stok barang dengan kode ${itemId} tidak mencukupi.`,
+                            data: null
+                        })
+                    }
+
+                    await ItemLogModel.updateOne({ _id: log._id }, { finalStock: newItemFinalStock }).session(session)
+                }
+
+                await ItemModel.updateOne({ id: currentLog.itemId }, { stock: prevItemFinalStock }).session(session)
+                await ItemModel.updateOne({ id: itemId.toUpperCase() }, { stock: newItemFinalStock }).session(session)
             }
 
             await session.commitTransaction()
