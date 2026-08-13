@@ -43,6 +43,7 @@ export default {
     async getLogById(req: Request, res: Response) {
         try {
             const log = res.locals.itemLog
+
             const data = {
                 _id: log._id,
                 itemId: log.itemId,
@@ -131,9 +132,56 @@ export default {
     async updateLog(req: Request, res: Response) {
         const { itemId, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
 
+        const session = await mongoose.startSession()
+        session.startTransaction()
+
         try {
             const currentLog = res.locals.itemLog
             const item = res.locals.item
+
+            if (itemId.toUpperCase() == currentLog.itemId) {
+                let finalStock = item.stock
+
+                let logs = await ItemLogModel.find({ itemId: itemId.toUpperCase() }).session(session)
+
+                for (const log of logs) {
+                    finalStock = finalStock - log.inQuantity + log.outQuantity
+                }
+
+                await ItemLogModel.deleteOne({ itemId: itemId.toUpperCase(), createdAt: currentLog.createdAt }).session(session)
+
+                await ItemLogModel.findOneAndUpdate(
+                    { itemId: itemId.toUpperCase(), createdAt },
+                    {
+                        $set: { finalStock: 0 },
+                        $inc: { inQuantity, outQuantity }
+                    },
+                    { upsert: true, session }
+                )
+
+                logs = await ItemLogModel.find({ itemId: itemId.toUpperCase() }).sort({ createdAt: 1 }).session(session)
+
+                for (const log of logs) {
+                    finalStock += log.inQuantity - log.outQuantity
+
+                    if (finalStock < 0) {
+                        await session.abortTransaction()
+                        session.endSession()
+
+                        return res.status(400).json({
+                            message: 'Stok barang tidak mencukupi.',
+                            data: null
+                        })
+                    }
+
+                    await ItemLogModel.updateOne({ _id: log._id }, { finalStock }).session(session)
+                }
+
+                await ItemModel.updateOne({ id: itemId.toUpperCase() }, { stock: finalStock }).session(session)
+            }
+
+            await session.commitTransaction()
+            session.endSession()
 
             res.status(200).json({
                 message: 'Berhasil mengubah data mutasi stok.',
@@ -141,7 +189,9 @@ export default {
             })
         }
         catch (error) {
-            console.log(error)
+            await session.abortTransaction()
+            session.endSession()
+
             res.status(500).json({
                 message: 'Internal Server Error',
                 data: null
