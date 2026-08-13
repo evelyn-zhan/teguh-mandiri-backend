@@ -16,5 +16,6 @@ router.get('/item-logs', itemLogController.getAllLogs)
 router.get('/item-logs/:id', itemLogMiddleware.checkItemLogExistence, itemLogController.getLogById)
 router.post('/item-logs', itemLogMiddleware.validateItemLogData, itemLogController.addLog)
 router.put('/item-logs/:id', itemLogMiddleware.validateItemLogData, itemLogMiddleware.checkItemLogExistence, itemLogController.updateLog)
+router.delete('/item-logs/:id', itemLogMiddleware.checkItemLogExistence, itemLogController.deleteLog)
 
 export default router

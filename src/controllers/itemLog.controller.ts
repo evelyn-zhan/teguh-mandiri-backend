@@ -267,8 +267,47 @@ export default {
     async deleteLog(req: Request<{ id: string }>, res: Response) {
         const { id } = req.params
 
+        const currentLog = res.locals.itemLog
+
+        const session = await mongoose.startSession()
+        session.startTransaction()
+
         try {
-            await ItemLogModel.deleteOne({ _id: new Types.ObjectId(id) })
+            const item = await ItemModel.findOne({ id: currentLog.itemId }).session(session)
+
+            let finalStock = item!.stock
+
+            let logs = await ItemLogModel.find({ itemId: item!.id }).session(session)
+
+            for (const log of logs) {
+                finalStock = finalStock - log.inQuantity + log.outQuantity
+            }
+            console.log(finalStock)
+
+            await ItemLogModel.deleteOne({ _id: new Types.ObjectId(id) }).session(session)
+
+            logs = await ItemLogModel.find({ itemId: item!.id }).sort({ createdAt: 1 }).session(session)
+
+            for (const log of logs) {
+                finalStock += log.inQuantity - log.outQuantity
+
+                if (finalStock < 0) {
+                    await session.abortTransaction()
+                    session.endSession()
+
+                    return res.status(400).json({
+                        message: `Gagal menghapus mutasi stok. Stok barang dengan kode ${item!.id} tidak mencukupi pada tanggal ${log.createdAt}.`,
+                        data: null
+                    })
+                }
+
+                await ItemLogModel.updateOne({ _id: log._id }, { finalStock }).session(session)
+            }
+
+            await ItemModel.updateOne({ id: item!.id }, { stock: finalStock }).session(session)
+
+            await session.commitTransaction()
+            session.endSession()
 
             res.status(200).json({
                 message: 'Berhasil menghapus mutasi stok.',
@@ -276,6 +315,9 @@ export default {
             })
         }
         catch (error) {
+            await session.abortTransaction()
+            session.endSession()
+
             res.status(500).json({
                 message: 'Internal Server Error',
                 data: null
