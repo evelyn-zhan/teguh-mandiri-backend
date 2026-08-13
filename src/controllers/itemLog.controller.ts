@@ -282,7 +282,6 @@ export default {
             for (const log of logs) {
                 finalStock = finalStock - log.inQuantity + log.outQuantity
             }
-            console.log(finalStock)
 
             await ItemLogModel.deleteOne({ _id: new Types.ObjectId(id) }).session(session)
 
