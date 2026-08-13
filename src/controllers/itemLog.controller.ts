@@ -169,7 +169,7 @@ export default {
                         session.endSession()
 
                         return res.status(400).json({
-                            message: 'Stok barang tidak mencukupi.',
+                            message: `Gagal mengubah mutasi stok. Stok barang tidak mencukupi pada tanggal ${log.createdAt}.`,
                             data: null
                         })
                     }
@@ -216,7 +216,7 @@ export default {
                         session.endSession()
 
                         return res.status(400).json({
-                            message: `Stok barang dengan kode ${currentLog.itemId} tidak mencukupi.`,
+                            message: `Gagal mengubah mutasi stok. Stok barang dengan kode ${currentLog.itemId} tidak mencukupi pada tanggal ${log.createdAt}.`,
                             data: null
                         })
                     }
@@ -234,7 +234,7 @@ export default {
                         session.endSession()
 
                         return res.status(400).json({
-                            message: `Stok barang dengan kode ${itemId} tidak mencukupi.`,
+                            message: `Gagal mengubah mutasi stok. Stok barang dengan kode ${itemId} tidak mencukupi pada tanggal ${log.createdAt}.`,
                             data: null
                         })
                     }
