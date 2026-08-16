@@ -15,8 +15,15 @@ export type TItemLog = {
 
 export default {
     async getAllLogs(req: Request, res: Response) {
+        const { startDate, endDate } = req.query
+
         try {
-            const logs = await ItemLogModel.find().sort({ createdAt: -1 })
+            const filter: any = {}
+
+            if (startDate) filter.createdAt = { $gte: startDate }
+            if (endDate) filter.createdAt = { ...filter.createdAt, $lte: endDate }
+
+            const logs = await ItemLogModel.find(filter).sort({ createdAt: -1 })
 
             const data = logs.map((log) => {
                 return {
