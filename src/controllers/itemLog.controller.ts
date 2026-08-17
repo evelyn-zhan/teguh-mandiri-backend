@@ -140,7 +140,7 @@ export default {
         }
     },
     async updateLog(req: Request, res: Response) {
-        const { itemId, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
+        const { itemId, itemName, inQuantity, outQuantity, createdAt } = req.body as unknown as TItemLog
 
         const currentLog = res.locals.itemLog
         const item = res.locals.item
@@ -163,7 +163,7 @@ export default {
                 await ItemLogModel.findOneAndUpdate(
                     { itemId: itemId.toUpperCase(), createdAt },
                     {
-                        $set: { finalStock: 0 },
+                        $set: { itemName, finalStock: 0 },
                         $inc: { inQuantity, outQuantity }
                     },
                     { upsert: true, session }
@@ -210,7 +210,7 @@ export default {
                 await ItemLogModel.findOneAndUpdate(
                     { itemId: itemId.toUpperCase(), createdAt },
                     {
-                        $set: { finalStock: 0 },
+                        $set: { itemName, finalStock: 0 },
                         $inc: { inQuantity, outQuantity }
                     },
                     { upsert: true, session }
