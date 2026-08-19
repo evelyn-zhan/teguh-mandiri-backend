@@ -73,11 +73,10 @@ export default {
         try {
             const item = res.locals.item
 
-            if (newId) {
-                const logs = await ItemLogModel.find({ itemId: item.id })
-                for (const log of logs) {
-                    await ItemLogModel.updateOne({ _id: new Types.ObjectId(log._id) }, { itemId: newId })
-                }
+            const logs = await ItemLogModel.find({ itemId: item.id })
+
+            for (const log of logs) {
+                await ItemLogModel.updateOne({ _id: new Types.ObjectId(log._id) }, { itemId: newId, itemName: name })
             }
 
             await ItemModel.updateOne({ id: id.toUpperCase() }, { id: newId, name })
